@@ -285,7 +285,12 @@ def validate(pkg):
                     err(f"{w}: var {vn} not a uniform of {sh}")
                 if is_num(vv):
                     continue
-                if isinstance(vv, list) and vv and all(is_num(x) for x in vv) and len(vv) in (2, 4):
+                if isinstance(vv, list) and len(vv) == 2 and all(is_num(x) for x in vv):
+                    continue  # Vec2: (f32, f32)
+                if isinstance(vv, list) and len(vv) == 4 and all(is_int(x) and 0 <= x <= 255 for x in vv):
+                    continue  # Color: [u8; 4] -- integers only, floats fail Phira's untagged enum
+                if isinstance(vv, list) and vv and all(is_num(x) for x in vv):
+                    err(f"{w}.vars.{vn}: {vv!r} matches no Variable form (colors must be 4 ints 0..255)")
                     continue
                 if isinstance(vv, list) and vv and all(isinstance(k, dict) for k in vv):
                     prev_end = None

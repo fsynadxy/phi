@@ -1,7 +1,7 @@
 """Build the Phira chart folder (and optionally the importable .pez).
 
 usage:
-  python tools/gen/build.py <out_dir> [--song path/to/song.mp3] [--pez out.pez]
+  python tools/gen/build.py <out_dir> [--song song.mp3] [--cover cover.jpg] [--pez out.pez]
 
 The folder receives chart.json / extra.json / info.yml / textures / illustration.
 Without --song the music file is left out (the repo does not ship the audio).
@@ -20,7 +20,7 @@ sys.path.insert(0, HERE)
 from chartlib import dump  # noqa: E402
 
 
-def build(out, song=None):
+def build(out, song=None, cover=None):
     import showcase
 
     os.makedirs(out, exist_ok=True)
@@ -33,6 +33,13 @@ def build(out, song=None):
         yaml.safe_dump(info, f, allow_unicode=True, sort_keys=False)
     if song:
         shutil.copy(song, os.path.join(out, info["music"]))
+    if cover:
+        from PIL import Image
+
+        im = Image.open(cover).convert("RGB")
+        if im.width > 1920:
+            im = im.resize((1920, round(im.height * 1920 / im.width)), Image.LANCZOS)
+        im.save(os.path.join(out, info["illustration"]), quality=92)
     print(f"built {out}: lines={len(chart.lines)} notes={chart.note_count()} effects={len(chart.effects)}")
     return info
 
@@ -55,8 +62,9 @@ if __name__ == "__main__":
     ap.add_argument("out")
     ap.add_argument("--song")
     ap.add_argument("--pez")
+    ap.add_argument("--cover")
     a = ap.parse_args()
-    build(a.out, a.song)
+    build(a.out, a.song, a.cover)
     if a.pez:
         if not a.song:
             sys.exit("--pez needs --song (a chart package must contain its music)")

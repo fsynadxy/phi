@@ -40,12 +40,12 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 INFO = {
-    "name": "未命名曲目",
+    "name": "华鸟风月",
     "difficulty": 15.0,
     "level": "SP Lv.?",
     "charter": "Claude",
-    "composer": "未知",
-    "illustrator": "Claude (procedural)",
+    "composer": "ZUN",
+    "illustrator": "未知",
     "chart": "chart.json",
     "format": "rpe",
     "music": "song.mp3",
@@ -53,7 +53,7 @@ INFO = {
     "previewStart": 93.0,
     "previewEnd": 113.0,
     "aspectRatio": 1.7777778,
-    "backgroundDim": 0.55,
+    "backgroundDim": 0.68,
     "lineLength": 6.0,
     "offset": 0.0,
     "tip": "观赏谱 · 建议开启 Autoplay 观看",
@@ -482,7 +482,7 @@ def scene_ascent(ctx, S, main):
     pulses(c, main, "rotate", [B(31) + frac(k, 2) for k in range(8)], lambda b: 3 if (b * 2) % 2 == 0 else -3, 0.5, "quadOut", layer=1)
     # vignette + darkening curtain
     c.fx("vignette", b0, b1, extend=kfv((b0, 0.25, "linear"), (b1, 0.62, "linear")),
-         radius=kfv((b0, 15.0, "quadIn"), (b1, 3.2, "linear")), color=[0.0, 0.0, 0.0, 1.0])
+         radius=kfv((b0, 15.0, "quadIn"), (b1, 3.2, "linear")))
     c.tl(S["curtain"], "alpha").wait(b0).to(B(33, 2), 120, "quadIn").to(b1, 170, "linear").jump(b1, 0)
     # rising streaks
     for k in range(10):
@@ -901,7 +901,7 @@ def scene_memory(ctx, S):
     caption(c, S, b0 + 1, "忆", "X  ·  MEMORY", hold=5)
     c.fx("grayscale", b0, b1, factor=kfv((b0, 0.0, "quadOut"), (b0 + 1, 1.0, "linear"), (B(157), 1.0, "quadIn"), (b1, 0.0, "linear")))
     c.fx("vignette", B(153), b1, extend=kfv((B(153), 0.25, "linear"), (b1, 0.6, "linear")),
-         radius=kfv((B(153), 15.0, "quadIn"), (b1, 3.4, "linear")), color=[0.0, 0.0, 0.0, 1.0])
+         radius=kfv((B(153), 15.0, "quadIn"), (b1, 3.4, "linear")))
     ln = c.line("memory_line", color=PALE, y=-280, sx=0.0, speed=7.0, z=3)
     a, sx, y, sp, rot = (c.tl(ln, p) for p in ("alpha", "scaleX", "moveY", "speed", "rotate"))
     a.jump(b0, 255).wait(b1 - 0.25).to(b1, 0, "linear")
@@ -951,7 +951,7 @@ def scene_coda(ctx, S):
     fin.ev("text", B(175), B(175, 2), "", "fin.")
     c.tl(fin, "alpha").wait(B(175)).to(B(175, 1), 200, "sineOut").wait(B(176, 1)).to(end + 2, 0, "sineIn")
     c.fx("vignette", B(174), end + 4, extend=kfv((B(174), 0.25, "linear"), (end + 4, 1.0, "linear")),
-         radius=kfv((B(174), 15.0, "quadIn"), (end + 4, 1.2, "linear")), color=[0.0, 0.0, 0.0, 1.0])
+         radius=kfv((B(174), 15.0, "quadIn"), (end + 4, 1.2, "linear")))
     # the moon returns (full circle)
     for key, al, sc in (("moon", 50, 1.0), ("moonglow", 36, 2.6)):
         mo = S[key]
