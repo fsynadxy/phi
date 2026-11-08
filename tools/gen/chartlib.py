@@ -70,7 +70,7 @@ class Track:
         b0, b1 = frac(b0), frac(b1)
         if b1 < b0:
             raise ValueError(f"{self.name}: segment ends before start {b0}->{b1}")
-        self.segs.append((b0, b1, v0, v1, ease_id(ease)))
+        self.segs.append((b0, b1, v0, v1, ease if isinstance(ease, tuple) else ease_id(ease)))
         return self
 
     def sorted(self):
@@ -97,20 +97,31 @@ class Track:
             return v1
         return (v0, v1, float((b - b0) / (b1 - b0)), e)
 
-    def to_json(self, kind="float"):
+    def to_json(self, kind="float", compact=False):
         out = []
         for b0, b1, v0, v1, e in self.sorted():
+            el, er = 0.0, 1.0
+            if isinstance(e, tuple):  # (rpe easing id, easingLeft, easingRight): a clipped part of the curve
+                e, el, er = e
             ev = {
-                "bezier": 0, "bezierPoints": [0.0, 0.0, 0.0, 0.0], "easingLeft": 0.0, "easingRight": 1.0,
+                "bezier": 0, "bezierPoints": [0.0, 0.0, 0.0, 0.0], "easingLeft": round(float(el), 6),
+                "easingRight": round(float(er), 6),
                 "easingType": e, "linkgroup": 0, "start": v0, "end": v1,
                 "startTime": triple(b0), "endTime": triple(b1),
             }
             if kind == "float":
-                ev["start"] = round(float(v0), 4)
-                ev["end"] = round(float(v1), 4)
+                ev["start"] = round(float(v0), 3 if compact else 4)
+                ev["end"] = round(float(v1), 3 if compact else 4)
             elif kind == "color":
                 ev["start"] = [int(max(0, min(255, round(c)))) for c in v0]
                 ev["end"] = [int(max(0, min(255, round(c)))) for c in v1]
+            if compact:  # drop fields whose serde defaults in prpr are identical
+                for k in ("bezier", "bezierPoints", "linkgroup"):
+                    ev.pop(k)
+                if ev["easingLeft"] == 0.0 and ev["easingRight"] == 1.0:
+                    ev.pop("easingLeft"), ev.pop("easingRight")
+                if ev["easingType"] == 1:
+                    ev.pop("easingType")
             out.append(ev)
         return out
 
@@ -177,7 +188,7 @@ class Line:
         return self
 
     # ---- export -------------------------------------------------------------
-    def to_json(self):
+    def to_json(self, compact=False):
         layers = []
         for li, L in enumerate(self.layers):
             d = {}
@@ -186,7 +197,7 @@ class Line:
                 if t is not None and t.segs:
                     key = {"alpha": "alphaEvents", "moveX": "moveXEvents", "moveY": "moveYEvents",
                            "rotate": "rotateEvents", "speed": "speedEvents"}[p]
-                    d[key] = t.to_json()
+                    d[key] = t.to_json(compact=compact)
             layers.append(d if d else None)
         while layers and layers[-1] is None:
             layers.pop()
@@ -198,7 +209,7 @@ class Line:
             if t is not None and t.segs:
                 key = {"scaleX": "scaleXEvents", "scaleY": "scaleYEvents", "color": "colorEvents",
                        "text": "textEvents", "incline": "inclineEvents"}[p]
-                ext[key] = t.to_json("color" if p == "color" else ("str" if p == "text" else "float"))
+                ext[key] = t.to_json("color" if p == "color" else ("str" if p == "text" else "float"), compact)
         notes = sorted(self.notes, key=lambda n: n["_b"])
         notes = [{k: v for k, v in n.items() if not k.startswith("_")} for n in notes]
         d = {
@@ -211,11 +222,15 @@ class Line:
             d["extended"] = ext
         for k, v in self.ctrl.items():
             d[f"{k}Control"] = v
+        if getattr(self, "attach", None):
+            d["attachUI"] = self.attach
         return d
 
 
 class Chart:
-    def __init__(self, offset_ms, meta):
+    def __init__(self, offset_ms, meta, bpm=BPM, compact=False):
+        self.bpm = bpm
+        self.compact = compact
         self.offset_ms = offset_ms
         self.meta = meta
         self.lines: list[Line] = []
@@ -242,18 +257,18 @@ class Chart:
     def to_json(self):
         m = self.meta
         return {
-            "BPMList": [{"bpm": BPM, "startTime": [0, 0, 1]}],
+            "BPMList": [{"bpm": self.bpm, "startTime": [0, 0, 1]}],
             "META": {"RPEVersion": 150, "background": m["illustration"], "charter": m["charter"],
                      "composer": m["composer"], "id": m.get("id", "0"), "illustration": m["illustrator"],
                      "level": m["level"], "name": m["name"], "offset": int(self.offset_ms), "song": m["music"]},
             "judgeLineGroup": ["Default"],
-            "judgeLineList": [ln.to_json() for ln in self.lines],
+            "judgeLineList": [ln.to_json(self.compact) for ln in self.lines],
             "multiLineString": "",
             "multiScale": 1.0,
         }
 
     def extra_json(self):
-        return {"bpm": [{"time": [0, 0, 1], "bpm": BPM}], "effects": self.effects}
+        return {"bpm": [{"time": [0, 0, 1], "bpm": self.bpm}], "effects": self.effects}
 
     def note_count(self):
         return sum(1 for ln in self.lines for n in ln.notes if not n["isFake"])

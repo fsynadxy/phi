@@ -4,3 +4,7 @@ out/
 *.wav
 *.pez
 __pycache__/
+*.ogg
+*.m4a
+!tools/data/mad/silence.ogg
+!chart_mad/silence.ogg

@@ -26,8 +26,11 @@ def build(out, song=None, cover=None, variant="showcase"):
     showcase = importlib.import_module(variant)
 
     os.makedirs(out, exist_ok=True)
-    # textures + illustration (deterministic)
-    subprocess.run([sys.executable, "-I", os.path.join(HERE, "assets.py"), out], check=True)
+    # textures + illustration (deterministic); a generator may bring its own asset set
+    if hasattr(showcase, "assets"):
+        showcase.assets(out)
+    else:
+        subprocess.run([sys.executable, "-I", os.path.join(HERE, "assets.py"), out], check=True)
     chart, info = showcase.make()
     dump(chart.to_json(), os.path.join(out, info["chart"]))
     dump(chart.extra_json(), os.path.join(out, "extra.json"))

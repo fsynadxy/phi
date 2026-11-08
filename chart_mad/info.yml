@@ -1,0 +1,28 @@
+name: 新宿决战
+difficulty: 0.0
+level: MAD
+charter: Claude
+composer: 雨爱 (DJ版) - 杨丞琳
+illustrator: Claude (procedural)
+chart: chart.json
+format: rpe
+music: song.ogg
+illustration: illustration.jpg
+previewStart: 37.8
+previewEnd: 57.8
+aspectRatio: 1.7777778
+backgroundDim: 0.6
+lineLength: 6.0
+offset: 0.0
+tip: 纯判定线演出 · 参考 NinjaristicNinja《新宿决战》MMV
+tags:
+- 判定线演出
+- MAD
+- 新宿决战
+- 无note
+intro: 参考 NinjaristicNinja 的《新宿决战》静止画 MAD，逐拍复刻剪辑节奏与配色的纯判定线演出。
+holdPartialCover: false
+noteUniformScale: false
+forceAspectRatio: false
+useRpe170Speed: false
+useAttachUiFix: true

@@ -71,6 +71,16 @@ RPE_MAP = [2, 2, e_(SINE, OUT), e_(SINE, IN), e_(QUAD, OUT), e_(QUAD, IN), e_(SI
            e_(BACK, IO), e_(ELASTIC, OUT), e_(ELASTIC, IN), e_(BOUNCE, OUT), e_(BOUNCE, IN), e_(BOUNCE, IO), e_(ELASTIC, IO)]
 
 
+def clamped(tid, left, right):
+    """prpr RPEEvent::tween: ClampedTween when a sub-range of the curve is selected."""
+    left, right = min(max(left, 0.0), 1.0), min(max(right, 0.0), 1.0)
+    if tid <= 2 or (abs(left) < 1e-5 and abs(right - 1) < 1e-5) or left >= right:
+        return tid
+    F = TW[tid]
+    f0, f1 = F(left), F(right)
+    return lambda x: (F(left + (right - left) * x) - f0) / (f1 - f0)
+
+
 def rpe_tween(et):
     et = max(1, int(et))
     return RPE_MAP[et] if et < len(RPE_MAP) else RPE_MAP[0]
@@ -118,7 +128,7 @@ class Anim:
         if t2 == t1:
             return v1
         x = (t - t1) / (t2 - t1)
-        y = TW[tw](x)
+        y = TW[tw](x) if isinstance(tw, int) else tw(x)
         if self.kind == "f":
             return v1 + (v2 - v1) * y
         if self.kind == "c":
@@ -187,7 +197,7 @@ class Chart:
                 s, en = s * factor, en * factor
             elif kind == "c":
                 s, en = tuple(c / 255 for c in s), tuple(c / 255 for c in en)
-            kfs.append((self.sec(e["startTime"]), s, rpe_tween(e.get("easingType", 1))))
+            kfs.append((self.sec(e["startTime"]), s, clamped(rpe_tween(e.get("easingType", 1)), e.get("easingLeft", 0.0), e.get("easingRight", 1.0))))
             kfs.append((self.sec(e["endTime"]), en, 0))
         return Anim(kfs, kind)
 
@@ -245,7 +255,7 @@ class Chart:
 
     def _line(self, ln):
         d = {"name": ln["Name"], "tex": ln["Texture"], "z": ln.get("zOrder", 0), "parent": ln.get("father", -1),
-             "rwp": ln.get("rotateWithFather", False), "cover": ln["isCover"] == 1}
+             "rwp": ln.get("rotateWithFather", False), "cover": ln["isCover"] == 1, "attach": ln.get("attachUI")}
         d["alpha"], d["has_alpha"] = self._sum_layers(ln, "alphaEvents", 1 / 255)
         d["x"], _ = self._sum_layers(ln, "moveXEvents", 2 / RPE_W)
         d["y"], _ = self._sum_layers(ln, "moveYEvents", 2 / RPE_H)
@@ -471,10 +481,19 @@ class Chart:
         if show_ui:
             d = ImageDraw.Draw(canvas)
             f = self.font(H * 0.035)
-            d.text((W * 0.012, H * 0.012), "II", font=f, fill=(255, 255, 255, 200))
-            d.text((W * 0.985, H * 0.015), "1000000", font=f, fill=(255, 255, 255, 220), anchor="ra")
-            d.text((W * 0.015, H * 0.965), self.info["name"], font=self.font(H * 0.03), fill=(255, 255, 255, 220), anchor="ls")
-            d.text((W * 0.985, H * 0.965), self.info["level"], font=self.font(H * 0.03), fill=(255, 255, 255, 220), anchor="rs")
+
+            def ui_a(el, a):  # attachUI: the element takes the alpha of the line it hangs from (position ignored)
+                for L in self.L:
+                    if L["attach"] == el:
+                        return int(a * max(0.0, min(1.0, L["alpha"](t))))
+                return a
+            for el, xy, txt, ft, a, anc in (("pause", (W * 0.012, H * 0.012), "II", f, 200, "la"),
+                                            ("score", (W * 0.985, H * 0.015), "1000000", f, 220, "ra"),
+                                            ("name", (W * 0.015, H * 0.965), self.info["name"], self.font(H * 0.03), 220, "ls"),
+                                            ("level", (W * 0.985, H * 0.965), self.info["level"], self.font(H * 0.03), 220, "rs")):
+                a = ui_a(el, a)
+                if a > 0:
+                    d.text(xy, txt, font=ft, fill=(255, 255, 255, a), anchor=anc)
         if label:
             d = ImageDraw.Draw(canvas)
             d.rectangle((0, H - 18, 150, H), fill=(0, 0, 0, 160))

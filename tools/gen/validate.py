@@ -234,8 +234,12 @@ def validate(pkg):
             e = chk_triple(n.get("endTime"), nw + ".endTime")
             if n.get("type") == 2 and s is not None and e is not None and e <= s:
                 err(f"{nw}: hold with non-positive length")
-            if "hitsound" in n:
-                warn(f"{nw}: custom hitsound")
+            if "hitsound" in n:  # prpr bails ("hitsound-missing") when a custom hitsound file is absent
+                hs = n["hitsound"]
+                if not isinstance(hs, str):
+                    err(f"{nw}: hitsound must be a string")
+                elif hs not in ("tap.mp3", "flick.mp3", "drag.mp3") and not os.path.exists(os.path.join(pkg, hs)):
+                    err(f"{nw}: custom hitsound {hs!r} missing from the package")
     for li, p in enumerate(parents):
         if p != -1 and not (0 <= p < len(lines)):
             err(f"line{li}: father {p} out of range")

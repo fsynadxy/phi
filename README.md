@@ -2,6 +2,8 @@
 
 《华鸟风月》（曲：ZUN ／ 谱：Claude）的 Phira 观赏谱（RPE 格式），以「夜空与星轨」为主题，按歌曲本身的结构编排成十二个乐章。
 
+本仓库另有一张《新宿决战》纯判定线演出（无 note），见下文「新宿决战」一节。
+
 - 时长 5:47，BPM 123（全曲恒定，按节拍网格对齐），1238 个物量，137 条判定线，25 段着色器特效
 - 难度标为 `SP Lv.?`，建议开启 Autoplay 观看
 
@@ -51,6 +53,28 @@ python tools/gen/build.py out --song 你的歌曲.mp3 --cover 封面.jpg --pez h
 | XI 终 Finale | 5:12 | 八瓣花、均衡器与底线同时出现，全曲最密集的段落 |
 | XII 尾声 Coda | 5:29 | 回到一条线、一个光点，月环重现，fin. |
 
+## 新宿决战 · 纯判定线演出（MAD）
+
+参考 NinjaristicNinja 的《新宿决战》静止画 MAD（B 站转载 BV1dGTu66Eo4，BGM 为《雨爱》DJ 版）做的无 note 演出谱。用判定线逐拍复刻原视频的剪辑节奏、配色和镜头语言。
+
+- 时长 1:33，BPM 153.6，共 126 个镜头，切点与参考视频逐拍对应
+- 冷蓝灰底色，青色代表五条、红色代表宿傩、紫色代表「茈」；穿插红色冲击帧和黑场停顿，结尾白场收束
+- 画面全部是判定线拼成的线稿和几何图形：眼睛、火焰、斩击、闪电、天际线、无量空处的漂浮面板、伏魔御厨子、法轮、结印、虚式「茈」等
+- 共 738 条判定线，由对象池轮流复用，每帧同时可见的最多约 70 条；另有 29 段着色器特效
+- 分数、连击、暂停键、曲名等 HUD 通过 attachUI 挂在透明线上，播放时不显示
+- 全谱只有一个 note，放在「茈」释放的那一拍。原因是 Phira 在 0 个 note 时准确率是 0/0。这个 note 是透明的，放在屏幕外，打击音换成了静音文件，演出中看不到也听不到。建议开 Autoplay 观看
+- 原音频是 m4a，Phira 无法解码 MP4 容器，所以打包时转成了 OGG Vorbis
+- 曲目信息按 B 站自动识别的「雨爱（DJ 版）」填写，可在 Phira 的谱面信息中修改
+
+![storyboard mad](preview/storyboard_mad.jpg)
+
+完整包 `shinjuku_showdown_mad.pez`（含音频）单独发送；谱面文件在 `chart_mad/`，不含音频。如需自行打包：
+
+```bash
+ffmpeg -i 原音频.m4a -vn -c:a libvorbis -q:a 7 song.ogg
+python tools/gen/build.py out --variant mad_shinjuku --song song.ogg --pez shinjuku_showdown_mad.pez
+```
+
 ## 说明
 
 - **时间对齐**：谱面偏移为 354 ms，其中约 25 ms 用于抵消 Phira 解码 MP3 时多出的编码延迟。若在你的设备上感觉整体偏早或偏晚，可在 Phira 的谱面信息里微调「偏移」。
@@ -62,3 +86,6 @@ python tools/gen/build.py out --song 你的歌曲.mp3 --cover 封面.jpg --pez h
 - `chart/`、`chart_v2/`：第一版与暴力版的谱面包内容（不含音频与封面）
 - `tools/gen/showcase.py`、`showcase_v2.py`：两版的全部编排（每个乐章一个函数）；`chartlib.py` 为 RPE 写入库，`validate.py` 为校验器，`preview.py` 为预览器（需设置 `RESPACK` 为 Phira 的 `assets/respack`）
 - `tools/data/`：对歌曲的节拍、起音与频谱分析结果；`tools/analysis/` 为生成这些数据的脚本（需 librosa）
+- `chart_mad/`：《新宿决战》演出谱的谱面包内容（不含音频）
+- `tools/gen/mad_shinjuku.py`：《新宿决战》的逐拍分镜；`madlib.py` 为演出引擎（镜头、对象池、缓动截取）；`mad_assets.py` 生成贴图（标题字体为 Yuji Boku，SIL OFL 1.1）
+- `tools/data/mad/`：标题字、封面、静音打击音与节拍网格；`tools/analysis/mad_stage*.py` 为这首歌的分析脚本
