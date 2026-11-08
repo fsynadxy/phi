@@ -309,6 +309,23 @@ def validate(pkg):
                         prev_end = e
                     continue
                 err(f"{w}.vars.{vn}: unsupported value {vv!r}")
+        for i, v in enumerate(ex.get("videos", [])):  # prpr parse/extra.rs ExtVideo + core/video.rs
+            w = f"extra.videos[{i}]"
+            path = v.get("path")
+            if not isinstance(path, str):
+                err(f"{w}: path missing")
+            elif not os.path.exists(os.path.join(pkg, path)):
+                err(f"{w}: video {path!r} missing from the package (Phira fails with video-load-failed)")
+            if "time" in v:
+                chk_triple(v["time"], w + ".time")
+            if v.get("scale", "cropCenter") not in ("cropCenter", "inside", "fit"):
+                err(f"{w}: scale must be cropCenter / inside / fit")
+            for k in ("alpha", "dim"):
+                if k in v and not is_num(v[k]) and not isinstance(v[k], list):
+                    err(f"{w}.{k}: must be a number or keyframes")
+            for k in v:
+                if k not in ("path", "time", "scale", "alpha", "dim", "attach"):
+                    warn(f"{w}: unknown field {k}")
     return info, chart
 
 

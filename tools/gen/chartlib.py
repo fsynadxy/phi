@@ -235,6 +235,7 @@ class Chart:
         self.meta = meta
         self.lines: list[Line] = []
         self.effects = []
+        self.videos = []
 
     def line(self, name, **kw):
         ln = Line(self, name, **kw)
@@ -244,6 +245,10 @@ class Chart:
 
     def effect(self, shader, b0, b1, vars=None, glob=False):
         self.effects.append({"start": triple(b0), "end": triple(b1), "shader": shader, "vars": vars or {}, "global": glob})
+
+    def video(self, path, b, scale="cropCenter", alpha=1.0, dim=0.0):
+        """a video played from beat b (prpr: extra.json "videos"; drawn under all judge lines, only while it lasts)."""
+        self.videos.append({"path": path, "time": triple(b), "scale": scale, "alpha": alpha, "dim": dim})
 
     @staticmethod
     def var_kfs(pts):
@@ -268,7 +273,10 @@ class Chart:
         }
 
     def extra_json(self):
-        return {"bpm": [{"time": [0, 0, 1], "bpm": self.bpm}], "effects": self.effects}
+        d = {"bpm": [{"time": [0, 0, 1], "bpm": self.bpm}], "effects": self.effects}
+        if self.videos:
+            d["videos"] = self.videos
+        return d
 
     def note_count(self):
         return sum(1 for ln in self.lines for n in ln.notes if not n["isFake"])

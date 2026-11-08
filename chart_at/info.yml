@@ -1,0 +1,28 @@
+name: 新宿决战
+difficulty: 16.5
+level: AT Lv.16
+charter: Claude
+composer: 雨爱 (DJ版) - 杨丞琳
+illustrator: NinjaristicNinja《新宿决战》MAD
+chart: chart.json
+format: rpe
+music: song.ogg
+illustration: illustration.jpg
+previewStart: 37.8
+previewEnd: 57.8
+aspectRatio: 1.7777778
+backgroundDim: 0.6
+lineLength: 6.0
+offset: 0.0
+tip: 素材：NinjaristicNinja《新宿决战》MAD（B站 BV1dGTu66Eo4）
+tags:
+- 新宿决战
+- MAD
+- 视频
+- AT
+intro: 四个名场面（200% 虚式「茈」、两次领域对拼、无限制虚式）播放原 MAD 素材，其余部分按 16.5 定数制谱。
+holdPartialCover: false
+noteUniformScale: false
+forceAspectRatio: false
+useRpe170Speed: false
+useAttachUiFix: true

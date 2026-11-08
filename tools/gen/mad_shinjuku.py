@@ -91,6 +91,8 @@ def F(x, d=None):
 
 # ------------------------------------------------------------------ globals
 class Globals:
+    HIDE_HUD = True  # the MAD hides Phira's HUD for the whole song
+
     def __init__(self, c):
         self.c = c
         self.root = c.line("cam")
@@ -120,7 +122,7 @@ class Globals:
             ln.ev("color", 0, EPSB, INK, INK)
         self.blk.ev("color", 0, EPSB, INK, INK)
         # hide the HUD: every UI element hangs from an invisible line
-        for ui in ("pause", "combonumber", "combo", "score", "bar", "name", "level"):
+        for ui in (("pause", "combonumber", "combo", "score", "bar", "name", "level") if self.HIDE_HUD else ()):
             h = c.line(f"hud_{ui}")
             h.attach = ui
             for p in ("moveX", "moveY", "rotate", "alpha"):

@@ -177,7 +177,8 @@ class Chart:
         for L in self.L:
             for n in L["notes"]:
                 n["mh"] = cnt[n["time"]] > 1
-        self.order = sorted(range(len(self.L)), key=lambda i: (self.L[i]["z"], i))
+        # prpr drops lines with attachUI from the render order (they only carry HUD elements)
+        self.order = sorted((i for i in range(len(self.L)) if not self.L[i]["attach"]), key=lambda i: (self.L[i]["z"], i))
         self._load_respack()
         self._load_bg()
 

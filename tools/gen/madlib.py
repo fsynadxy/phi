@@ -177,6 +177,7 @@ class Engine:
         self.root = root_index
         self.pools = {}
         self.shots = []
+        self.mask = []  # [(b0, b1)] beat ranges in which nothing may be shown (e.g. while a video plays)
 
     def slot(self, tex, z, b0, b1):
         key = (tex, z)
@@ -197,8 +198,24 @@ class Engine:
         self.shots.append(sh)
         return sh
 
+    def _apply_mask(self, e):
+        """clip an element against the masked ranges; False if nothing is left."""
+        for m0, m1 in self.mask:
+            m0, m1 = frac(m0), frac(m1)
+            if e.end <= m0 or e.start >= m1:
+                continue
+            if e.start >= m0 and e.end <= m1:
+                return False
+            if e.start < m0:
+                e.end = m0
+            else:
+                e.start = m1
+        return e.end > e.start
+
     def bake(self):
         elems = [e for sh in self.shots for e in sh.elems]
+        if self.mask:
+            elems = [e for e in elems if self._apply_mask(e)]
         elems.sort(key=lambda e: (e.start, e.shot_order))
         for e in elems:
             e.bake()
