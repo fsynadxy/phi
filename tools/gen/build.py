@@ -1,7 +1,7 @@
 """Build the Phira chart folder (and optionally the importable .pez).
 
 usage:
-  python tools/gen/build.py <out_dir> [--song song.mp3] [--cover cover.jpg] [--pez out.pez]
+  python tools/gen/build.py <out_dir> [--variant showcase_v2] [--song song.mp3] [--cover cover.jpg] [--pez out.pez]
 
 The folder receives chart.json / extra.json / info.yml / textures / illustration.
 Without --song the music file is left out (the repo does not ship the audio).
@@ -20,8 +20,10 @@ sys.path.insert(0, HERE)
 from chartlib import dump  # noqa: E402
 
 
-def build(out, song=None, cover=None):
-    import showcase
+def build(out, song=None, cover=None, variant="showcase"):
+    import importlib
+
+    showcase = importlib.import_module(variant)
 
     os.makedirs(out, exist_ok=True)
     # textures + illustration (deterministic)
@@ -63,8 +65,9 @@ if __name__ == "__main__":
     ap.add_argument("--song")
     ap.add_argument("--pez")
     ap.add_argument("--cover")
+    ap.add_argument("--variant", default="showcase", help="generator module: showcase (v1) or showcase_v2")
     a = ap.parse_args()
-    build(a.out, a.song, a.cover)
+    build(a.out, a.song, a.cover, a.variant)
     if a.pez:
         if not a.song:
             sys.exit("--pez needs --song (a chart package must contain its music)")

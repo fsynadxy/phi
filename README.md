@@ -18,7 +18,21 @@
 ```bash
 pip install numpy pillow pyyaml
 python tools/gen/build.py out --song 你的歌曲.mp3 --cover 封面.jpg --pez huaniaofengyue_showcase.pez
+# 暴力版：加上 --variant showcase_v2
 ```
+
+## 暴力版（v2）
+
+同一首歌、同样的十二段结构，所有方面加码，导入后与第一版并列显示（等级 `SP Lv.!?`）。完整包 `huaniaofengyue_showcase_v2.pez` 同样单独发送；谱面文件在 `chart_v2/`。
+
+- 1798 个物量（第一版 1238），另有约 600 个装饰用假音符（音符雨、残影）；高潮段每秒约 9 个音符
+- 全部判定线挂在一条「镜头」线下：鼓点震屏、整体倾斜，终章最后一小节整屏旋转一周
+- 「华」「鸟」「风」「月」四个字分别砸在四个高潮的第一拍上；开场与结尾显示完整曲名
+- 流速更高且不连续：「息」中音符悬停冻结一拍半后以 30 倍流速冲入；两段铺垫中判定线高速旋转并推到三十二分音符
+- 判定线瞬移（幻）、快照式旋转（绽、律）、十二臂星芒（极）、十二瓣花（终），尾声开头所有线碎裂飞散
+- 每小节冲击波、逐拍色差与频闪、像素化爆发、故障特效；设备较弱时建议关闭特效
+
+![storyboard v2](preview/storyboard_v2.jpg)
 
 ## 十二乐章
 
@@ -45,6 +59,6 @@ python tools/gen/build.py out --song 你的歌曲.mp3 --cover 封面.jpg --pez h
 
 ## 目录
 
-- `chart/`：谱面包内容（不含音频）
-- `tools/gen/showcase.py`：全部编排（每个乐章一个函数）；`chartlib.py` 为 RPE 写入库，`validate.py` 为校验器，`preview.py` 为预览器（需设置 `RESPACK` 为 Phira 的 `assets/respack`）
+- `chart/`、`chart_v2/`：第一版与暴力版的谱面包内容（不含音频与封面）
+- `tools/gen/showcase.py`、`showcase_v2.py`：两版的全部编排（每个乐章一个函数）；`chartlib.py` 为 RPE 写入库，`validate.py` 为校验器，`preview.py` 为预览器（需设置 `RESPACK` 为 Phira 的 `assets/respack`）
 - `tools/data/`：对歌曲的节拍、起音与频谱分析结果；`tools/analysis/` 为生成这些数据的脚本（需 librosa）

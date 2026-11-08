@@ -1,0 +1,28 @@
+name: 华鸟风月
+difficulty: 16.0
+level: SP Lv.!?
+charter: Claude
+composer: ZUN
+illustrator: 未知
+chart: chart.json
+format: rpe
+music: song.mp3
+illustration: illustration.jpg
+previewStart: 93.0
+previewEnd: 113.0
+aspectRatio: 1.7777778
+backgroundDim: 0.68
+lineLength: 6.0
+offset: 0.0
+tip: 观赏谱 · 暴力版 · 建议开启 Autoplay 观看
+tags:
+- 观赏谱
+- showcase
+- autoplay
+- 暴力版
+intro: 华鸟风月 · 暴力版：同一首歌，所有方面都加码。
+holdPartialCover: false
+noteUniformScale: false
+forceAspectRatio: false
+useRpe170Speed: false
+useAttachUiFix: true
