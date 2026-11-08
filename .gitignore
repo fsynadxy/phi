@@ -1,0 +1,6 @@
+dist/
+out/
+*.mp3
+*.wav
+*.pez
+__pycache__/

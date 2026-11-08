@@ -1,0 +1,27 @@
+name: 未命名曲目
+difficulty: 15.0
+level: SP Lv.?
+charter: Claude
+composer: 未知
+illustrator: Claude (procedural)
+chart: chart.json
+format: rpe
+music: song.mp3
+illustration: illustration.jpg
+previewStart: 93.0
+previewEnd: 113.0
+aspectRatio: 1.7777778
+backgroundDim: 0.55
+lineLength: 6.0
+offset: 0.0
+tip: 观赏谱 · 建议开启 Autoplay 观看
+tags:
+- 观赏谱
+- showcase
+- autoplay
+intro: 十二个乐章的观赏谱：序 · 升 · 绽 · 息 · 律 · 回响 · 环 · 幻 · 极 · 忆 · 终 · 尾声。
+holdPartialCover: false
+noteUniformScale: false
+forceAspectRatio: false
+useRpe170Speed: false
+useAttachUiFix: true
