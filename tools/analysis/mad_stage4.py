@@ -1,18 +1,18 @@
 """Stage 4: 16th-grid onset matrices (perc/harm split by band) + pitch-ish descriptor per onset.
 
-usage: python mad_stage4.py <work>
+usage: python mad_stage4.py <work>   (reads grid.json and mono22k.wav, writes steps.npz)
 """
 import sys, json, gc
 import numpy as np
 import soundfile as sf
 import librosa
 
-SP = sys.argv[1]
-G = json.load(open(f"{SP}/work2/grid.json"))
+W = sys.argv[1]
+G = json.load(open(f"{W}/grid.json"))
 BPM = G["bpm"]; PH = G["phase"]; per = 60 / BPM
 FIRST = 0
 T0 = PH + FIRST * per          # time of bar 0
-y, sr = sf.read(f"{SP}/work2/mono22k.wav", dtype="float32")
+y, sr = sf.read(f"{W}/mono22k.wav", dtype="float32")
 dur = len(y) / sr
 nbar = int((dur - T0) / (4 * per)) + 1
 nstep = nbar * 16
@@ -67,7 +67,7 @@ def sample(e, t, w0=-0.012, w1=0.035):
 
 M = {k: np.array([sample(env[k], t) for t in step_t]) for k in env}
 P = np.array([[float(np.median(pitch[i, max(0, int((t + 0.02) * fps)):int((t + 0.09) * fps)])) if int((t + 0.09) * fps) < pitch.shape[1] else 0 for t in step_t] for i in range(2)])
-np.savez_compressed(f"{SP}/work2/steps.npz", step_t=step_t, T0=T0, per=per, nbar=nbar, pitch_cent=P[0], pitch_pk=P[1], **M)
+np.savez_compressed(f"{W}/steps.npz", step_t=step_t, T0=T0, per=per, nbar=nbar, pitch_cent=P[0], pitch_pk=P[1], **M)
 print("bars", nbar, "steps", nstep, "T0", T0)
 
 for bar in range(nbar):

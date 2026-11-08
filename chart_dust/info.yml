@@ -1,0 +1,29 @@
+name: 走过漫漫时空
+difficulty: 15.0
+level: SP Lv.?
+charter: Claude
+composer: 塞壬唱片-MSR
+illustrator: Claude (procedural)
+chart: chart.json
+format: rpe
+music: song.ogg
+illustration: illustration.jpg
+previewStart: 90.0
+previewEnd: 110.0
+aspectRatio: 1.7777778
+backgroundDim: 0.6
+lineLength: 6.0
+offset: 0.0
+tip: 观赏谱 · 参考《明日方舟》SideStory「遗尘漫步」 · 建议开启 Autoplay 观看
+tags:
+- 观赏谱
+- showcase
+- autoplay
+- 明日方舟
+- 遗尘漫步
+intro: 《走过漫漫时空》（明日方舟「遗尘漫步」OST）的特效观赏谱：萨尔贡的沙、异客的雷、切尔诺伯格的雪、维多利亚的雨，最后在方舟前汇合。
+holdPartialCover: false
+noteUniformScale: false
+forceAspectRatio: false
+useRpe170Speed: false
+useAttachUiFix: true

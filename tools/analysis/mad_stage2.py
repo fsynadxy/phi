@@ -1,6 +1,7 @@
 """Stage 2: precise beat grid (BPM + phase), drift check, band onsets (chunked, low memory).
 
-usage: python mad_stage2.py <work>/mono22k.wav <work>/bands.npz <work>/grid.json
+usage: python mad_stage2.py <work>/mono22k.wav <work>/bands.npz <work>/grid.json [bpm_lo bpm_hi]
+(新宿决战: 151.5 155.5, the default; 走过漫漫时空: 158 162)
 """
 import sys, json, gc
 import numpy as np
@@ -61,7 +62,8 @@ def grid_score(bpm, phase, env, t0=0, t1=None):
     return np.interp(fr, np.arange(n), env).mean()
 
 best = None
-for bpm in np.arange(151.50, 155.50, 0.01):
+LO, HI = (float(sys.argv[4]), float(sys.argv[5])) if len(sys.argv) > 5 else (151.50, 155.50)
+for bpm in np.arange(LO, HI, 0.01):
     per = 60.0 / bpm
     for ph in np.arange(0, per, 0.002):
         s = grid_score(bpm, ph, envc)

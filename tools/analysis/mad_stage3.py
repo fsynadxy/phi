@@ -1,6 +1,6 @@
 """MAD song: grid at 153.6 BPM, downbeat phase, per-beat features, SSM/novelty, stops & impacts.
 
-usage: python mad_stage3.py <work>   (reads mono22k.wav and bands.npz, writes beatfeat.npz and grid.json)
+usage: python mad_stage3.py <work> [bpm]   (reads mono22k.wav and bands.npz, writes beatfeat.npz and grid.json)
 """
 import sys, json
 import numpy as np
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import uniform_filter1d
 
 W = sys.argv[1]
-BPM = 153.6
+BPM = float(sys.argv[2]) if len(sys.argv) > 2 else 153.6  # 走过漫漫时空: 160
 per = 60 / BPM
 y, sr = sf.read(f"{W}/mono22k.wav", dtype="float32")
 dur = len(y) / sr

@@ -3,6 +3,7 @@
 《华鸟风月》（曲：ZUN ／ 谱：Claude）的 Phira 观赏谱（RPE 格式），以「夜空与星轨」为主题，按歌曲本身的结构编排成十二个乐章。
 
 本仓库另有《新宿决战》的两张谱：纯判定线演出（无 note），以及嵌入原 MAD 素材的 IN Lv.16（定数 16.2），见下文。
+另有《走过漫漫时空》（《明日方舟》「遗尘漫步」OST）的特效观赏谱，见下文。
 
 - 时长 5:47，BPM 123（全曲恒定，按节拍网格对齐），1238 个物量，137 条判定线，25 段着色器特效
 - 难度标为 `SP Lv.?`，建议开启 Autoplay 观看
@@ -100,6 +101,36 @@ MAD_CLIPS=clips python tools/gen/build.py out --variant shinjuku_chart --song so
 
 ![storyboard in](preview/storyboard_in.jpg)
 
+## 走过漫漫时空 · 特效观赏谱
+
+《走过漫漫时空》（塞壬唱片，《明日方舟》SideStory「遗尘漫步」OST）的观赏谱，等级 `SP Lv.?`，建议开启 Autoplay 观看。
+
+- 时长 2:11，160 BPM；625 个 note，183 条线，66 段着色器特效
+- 以活动的主线「凯尔希跨越漫长岁月的三段回忆」编排：
+
+| 拍 | 段落 | 画面 |
+|---|---|---|
+| 0–34 | 漫漫独行 | 黑暗中一个光点，判定线化作地平线，每个 note 是一步脚印，标题浮现 |
+| 34–50 | 黎明 | 沙丘后日出 |
+| 50–90 | 萨尔贡 | 遗迹剪影、风沙，判定线随沙丘起伏倾斜，沙粒（drag）顺着线流动 |
+| 90–162 | 异客 | 判定线连成锁链状闪电、八芒星、双线雷暴，背后是萨尔贡几何纹样 |
+| 162–178 | 回溯 | 钟面倒转，判定线化作指针，画面坍缩成一点（灰阶、鱼眼、像素化） |
+| 178–194 | 切尔诺伯格 | 雪与心电图：每次心跳画出一个波形，note 正好落在波峰上 |
+| 194–242 | 维多利亚 | 雨夜、哥特拱窗，左右两条判定线作窗框，方舟从地下升起 |
+| 242–290 | 浩瀚之旅 | 四条判定线组成旋转的八芒星，金、冰蓝、深红、翠绿四色轮换 |
+| 290–306 | 静止 | 时间停止，万物化为尘埃 |
+| 306–350 | 黎明 | 脚印延伸向地平线，标题重现，判定线渐行渐远 |
+
+- 贴图全部程序生成（`tools/gen/dust_assets.py`）；标题字为思源宋体（Noto Serif SC）、Cinzel、Rajdhani（均为 SIL OFL 1.1），预先渲染在 `tools/data/dust/`
+- 仓库中没有音频；完整包 `walk_in_the_dust_showcase.pez` 单独发送。如需自行打包（m4a 需先转成 OGG）：
+
+```bash
+ffmpeg -i 原音频.m4a -vn -c:a libvorbis -q:a 7 song.ogg
+python tools/gen/build.py out --variant dust_walk --song song.ogg --pez walk_in_the_dust_showcase.pez
+```
+
+![storyboard dust](preview/storyboard_dust.jpg)
+
 ## 说明
 
 - **时间对齐**：谱面偏移为 354 ms，其中约 25 ms 用于抵消 Phira 解码 MP3 时多出的编码延迟。若在你的设备上感觉整体偏早或偏晚，可在 Phira 的谱面信息里微调「偏移」。
@@ -114,4 +145,5 @@ MAD_CLIPS=clips python tools/gen/build.py out --variant shinjuku_chart --song so
 - `chart_mad/`：《新宿决战》演出谱的谱面包内容（不含音频）
 - `tools/gen/mad_shinjuku.py`：《新宿决战》的逐拍分镜；`madlib.py` 为演出引擎（镜头、对象池、缓动截取）；`mad_assets.py` 生成贴图（标题字体为 Yuji Boku，SIL OFL 1.1）
 - `tools/data/mad/`：标题字、封面、静音打击音、节拍网格与 16 分起音矩阵；`tools/analysis/mad_stage*.py` 为这首歌的分析脚本
-- `chart_in/`、`tools/gen/shinjuku_chart.py`：IN Lv.16 谱面（不含音频与视频）及其生成器；`tools/gen/playcheck.py` 为可玩性检查；`tools/analysis/cut_clips.py` 从参考视频切出素材
+- `chart_in/`、`tools/gen/shinjuku_chart.py`：IN Lv.16 谱面（不含音频与视频）及其生成器
+- `chart_dust/`、`tools/gen/dust_walk.py`、`dust_assets.py`：《走过漫漫时空》观赏谱（不含音频）、生成器与贴图；`tools/data/dust/` 为预渲染文字、封面与节拍分析结果（`mad_stage2-4.py` 以 160 BPM 运行得到）；`tools/gen/playcheck.py` 为可玩性检查；`tools/analysis/cut_clips.py` 从参考视频切出素材
