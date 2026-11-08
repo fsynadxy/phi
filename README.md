@@ -2,7 +2,7 @@
 
 《华鸟风月》（曲：ZUN ／ 谱：Claude）的 Phira 观赏谱（RPE 格式），以「夜空与星轨」为主题，按歌曲本身的结构编排成十二个乐章。
 
-本仓库另有《新宿决战》的两张谱：纯判定线演出（无 note），以及嵌入原 MAD 素材的 AT Lv.16（定数 16.5），见下文。
+本仓库另有《新宿决战》的两张谱：纯判定线演出（无 note），以及嵌入原 MAD 素材的 IN Lv.16（定数 16.2），见下文。
 
 - 时长 5:47，BPM 123（全曲恒定，按节拍网格对齐），1238 个物量，137 条判定线，25 段着色器特效
 - 难度标为 `SP Lv.?`，建议开启 Autoplay 观看
@@ -75,9 +75,9 @@ ffmpeg -i 原音频.m4a -vn -c:a libvorbis -q:a 7 song.ogg
 python tools/gen/build.py out --variant mad_shinjuku --song song.ogg --pez shinjuku_showdown_mad.pez
 ```
 
-## 新宿决战 · AT Lv.16（定数 16.5）
+## 新宿决战 · IN Lv.16（定数 16.2）
 
-在上面那张演出谱的基础上改成可玩的谱面，并在四个名场面直接播放原 MAD 的画面（Phira 的谱面视频功能，`extra.json` 中的 `videos`）：
+可玩的谱面，在四个名场面直接播放原 MAD 的画面（Phira 的谱面视频功能，`extra.json` 中的 `videos`）：
 
 | 片段 | 拍 | 参考视频时间 | 内容 |
 |---|---|---|---|
@@ -87,19 +87,18 @@ python tools/gen/build.py out --variant mad_shinjuku --song song.ogg --pez shinj
 | 无限制虚式 | 216–曲终 | 1:25–1:34 | 红色余烬 → 坠落 → 释放 → 白场 |
 
 - 视频播放时只放动画：背景、判定线和 HUD 全部让开，没有 note；视频最后一拍判定线淡入，接上后面的谱面
-- 其余约 73 秒按 16.5 左右定位制谱：765 个 note（tap 577、flick 81、drag 92、hold 15），1 秒内峰值 23 个。主要配置为 16 分交互与和弦、斩击处的 32 分 flick 连打、drag 对 tap 的双手分离、hold 压 16 分、上下双线交替、判定线倾斜 / 旋转 / 十字交叉、流速变化
-- 背景是上一张演出谱的分镜，压暗约 60%，闪光和震屏也减弱，以免干扰读谱
-- `tools/gen/playcheck.py` 按双手模型检查了整张谱：没有 3 个以上同时触点，没有重叠 note，没有单手快于 16 分的连打或过远的跳跃，没有落在隐形判定线或屏幕外的 note
-- 节奏全部取自对歌曲 16 分网格的起音分析（`tools/data/mad/steps.npz`），密度随音乐起伏
+- 其余约 73 秒：纯色暗底（只随段落变换色调），一条固定的判定线，note 落在铺满全宽的 7 条轨道上（左手 0–2、右手 4–6，中间轨用于和弦、扫键与连打）
+- 710 个 note（tap 558、flick 83、drag 54、hold 15），平均每秒约 9.7 个，1 秒内峰值 17 个；节奏全部取自对歌曲 16 分网格的起音分析（`tools/data/mad/steps.npz`），高潮段为满 16 分
+- `tools/gen/playcheck.py` 按双手模型检查了整张谱：没有 3 个以上同时触点，没有重叠 note，没有单手快于 16 分的连打或过远的跳跃
 
-**仓库里没有视频素材和音频**（素材来自 NinjaristicNinja 的作品）。`chart_at/` 中的 `extra.json` 引用了 `clip_a.mp4`–`clip_d.mp4`，缺少这些文件时 Phira 无法加载。完整包 `shinjuku_showdown_at16.pez` 单独发送。如需自行打包：
+**仓库里没有视频素材和音频**（素材来自 NinjaristicNinja 的作品）。`chart_in/` 中的 `extra.json` 引用了 `clip_a.mp4`–`clip_d.mp4`，缺少这些文件时 Phira 无法加载。完整包 `shinjuku_showdown_in16.pez` 单独发送。如需自行打包：
 
 ```bash
 python tools/analysis/cut_clips.py 参考视频.mp4 clips/            # 按拍切出四段素材（需 ffmpeg）
-MAD_CLIPS=clips python tools/gen/build.py out --variant shinjuku_chart --song song.ogg --pez shinjuku_showdown_at16.pez
+MAD_CLIPS=clips python tools/gen/build.py out --variant shinjuku_chart --song song.ogg --pez shinjuku_showdown_in16.pez
 ```
 
-![storyboard at](preview/storyboard_at.jpg)
+![storyboard in](preview/storyboard_in.jpg)
 
 ## 说明
 
@@ -115,4 +114,4 @@ MAD_CLIPS=clips python tools/gen/build.py out --variant shinjuku_chart --song so
 - `chart_mad/`：《新宿决战》演出谱的谱面包内容（不含音频）
 - `tools/gen/mad_shinjuku.py`：《新宿决战》的逐拍分镜；`madlib.py` 为演出引擎（镜头、对象池、缓动截取）；`mad_assets.py` 生成贴图（标题字体为 Yuji Boku，SIL OFL 1.1）
 - `tools/data/mad/`：标题字、封面、静音打击音、节拍网格与 16 分起音矩阵；`tools/analysis/mad_stage*.py` 为这首歌的分析脚本
-- `chart_at/`、`tools/gen/shinjuku_chart.py`：AT Lv.16 谱面（不含音频与视频）及其生成器；`tools/gen/playcheck.py` 为可玩性检查；`tools/analysis/cut_clips.py` 从参考视频切出素材
+- `chart_in/`、`tools/gen/shinjuku_chart.py`：IN Lv.16 谱面（不含音频与视频）及其生成器；`tools/gen/playcheck.py` 为可玩性检查；`tools/analysis/cut_clips.py` 从参考视频切出素材
