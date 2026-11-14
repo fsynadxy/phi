@@ -28,7 +28,12 @@ def build(out, song=None, cover=None, variant="showcase"):
     os.makedirs(out, exist_ok=True)
     # textures + illustration (deterministic); a generator may bring its own asset set
     if hasattr(showcase, "assets"):
-        showcase.assets(out)
+        import inspect
+
+        if "cover" in inspect.signature(showcase.assets).parameters:  # generators that cut textures from the cover
+            showcase.assets(out, cover=cover)
+        else:
+            showcase.assets(out)
     else:
         subprocess.run([sys.executable, "-I", os.path.join(HERE, "assets.py"), out], check=True)
     chart, info = showcase.make()
