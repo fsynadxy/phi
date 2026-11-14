@@ -131,6 +131,10 @@ python tools/gen/build.py out --variant dust_walk --song song.ogg --pez walk_in_
 
 ![storyboard dust](preview/storyboard_dust.jpg)
 
+## 给其他工作区：做 Phira 谱面的格式与避坑
+
+见 [docs/PHIRA_CHART_GUIDE.md](docs/PHIRA_CHART_GUIDE.md)（含可直接改的最小示例 `tools/gen/example_minimal.py`）。
+
 ## 说明
 
 - **时间对齐**：谱面偏移为 354 ms，其中约 25 ms 用于抵消 Phira 解码 MP3 时多出的编码延迟。若在你的设备上感觉整体偏早或偏晚，可在 Phira 的谱面信息里微调「偏移」。
