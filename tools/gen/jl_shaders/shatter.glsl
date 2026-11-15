@@ -1,7 +1,11 @@
 #version 100
 // Just Love - breaking ice: a Voronoi crack network that grows from the impact point (crack),
 // then every shard slides, refracts and finally drops out (power).
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
 
 varying lowp vec2 uv;
 uniform vec2 screenSize;

@@ -1,7 +1,11 @@
 #version 100
 // Just Love - snowflake kaleidoscope: folds the screen into mirrored sectors around a centre.
 // sides = 6 turns anything on screen into a six-armed crystal.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
 
 varying lowp vec2 uv;
 uniform vec2 screenSize;
@@ -21,7 +25,10 @@ void main() {
   vec2 p = (uv - c) * vec2(aspect, 1.0);
   float r = length(p) / max(zoom, 0.05);
   float seg = 6.2831853 / max(sides, 1.0);
-  float a = atan(p.y, p.x) + radians(angle);
+  float a = radians(angle);
+  if (abs(p.x) + abs(p.y) > 0.000001) {
+    a += atan(p.y, p.x);
+  }
   a = mod(a, seg);
   a = abs(a - seg * 0.5);
   float b = radians(source) + a - seg * 0.25;

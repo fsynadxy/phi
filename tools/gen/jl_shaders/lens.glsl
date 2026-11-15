@@ -2,7 +2,11 @@
 // Just Love - "lens": one always-on pass that carries the camera (zoom / roll / shift), a radial
 // colour split, saturation, an impact-frame invert, a colour wash and a frosted edge.
 // Everything is driven by keyframed uniforms, so the whole song needs a single program.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
 
 varying lowp vec2 uv;
 uniform vec2 screenSize;

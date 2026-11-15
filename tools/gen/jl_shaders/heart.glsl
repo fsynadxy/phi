@@ -1,6 +1,10 @@
 #version 100
 // Just Love - heart iris: everything outside a heart is covered (cover), with a glowing rim.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
 
 varying lowp vec2 uv;
 uniform vec2 screenSize;

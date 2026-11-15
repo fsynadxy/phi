@@ -425,7 +425,7 @@ class JL:
             if F(b0) < t.b - EPSB:
                 raise ValueError(f"{self.ln.name}.{P[k]}: animation from {float(b0)} overlaps one ending {float(t.b)}")
             t.wait(b0)
-            t.to(b1, self._conv(k, v), ease)
+            t.to(b1, self._conv(k, v), "linear" if k == "spd" else ease)  # Phira reads speed ramps as linear
         return self
 
     def v(self, k):

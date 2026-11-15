@@ -9,7 +9,7 @@ from chartlib import DRAG, EPSB, FLICK, HOLD, TAP
 from jl_core import (B, BLUSH, DEEP, F, GOLD, ICE, INDIGO, LAVENDER, LINE, MINT, NIGHT, PINK, PX, ROSE, SKY, SNOW, TEXK,
                      VIOLET, WHITE, Rig, mix)
 from madlib import TL
-from just_love import TEX, burst, caption, glow, heart_up, ring, ripple, scroll, snow, sparkle, th
+from just_love import TEX, burst, caption, glow, heart_up, ring, ripple, scroll, snow, sparkle, th, watermark
 
 
 # ------------------------------------------------------------------ rhythm helpers
@@ -323,6 +323,7 @@ def drop1(X):
     X.pre.append(("shockwave", 67, 69, {"progress": X.c.var_kfs([(67, 0.02, "quadOut"), (69, 1.0, "linear")]), "width": 0.12, "distortion": 0.8, "expand": 10.0}))
     s = E.shot(67, 131)
     caption(s, "t_ch2.png", 67, 83)
+    watermark(s, "t_yuki.png", 67, 99, 590, 40, 430, ICE, 44)
     mist = s.tex("mist.png", 100, 40, 2600, None, 0.0, SKY, 70, -50)
     mist.at(131, "linear", x=-160)
     em = s.tex("flake_a.png", 0, 30, 1500, 1500, 0.0, ICE, 150, -30)
@@ -505,6 +506,7 @@ class Flower:
         for p in self.petals:
             st = b + F(stagger) * p["ring"]
             self._move(p, st, None, 0.06, 0.25, None)
+            p["tl"]["rotate"].jump(st, 90.0 - p["phi"])
             p["tl"]["color"].jump(st, colors[p["ring"]])
             p["tl"]["alpha"].jump(st, float(p["a"]))
             self._move(p, st, st + F(dur), 1.0, 1.0, "expoOut")
@@ -720,6 +722,7 @@ def chorus(X, b0=227, last=False):
     L.wash.ramp(b0, b0 + 2, 0.9, 0.0, "expoOut")
     L.zoom.ramp(b0, b0 + 2, 1.10, 1.0, "expoOut")
     L.sat.ramp(b0, b0 + 2, 1.0, 1.12, "sineOut")
+    L.frost.ramp(b0, b0 + 2, 0.3, 0.12, "sineOut")
     G.shake(b0, 26, 1.2, 0.5)
     shock(X, b0, 0.14, 0.9, 3, 0.5, 0.545)
     G.bgc(b0, (40, 34, 96), 232)
@@ -729,8 +732,11 @@ def chorus(X, b0=227, last=False):
     s = E.shot(b0, b1)
     if not last:
         caption(s, "t_ch3.png", b0, b0 + 16)
+        watermark(s, "t_hasu.png", b0, b0 + 32, 600, 40, 430, BLUSH, 50)
     else:
         caption(s, "t_ch7.png", b0, b0 + 16)
+        watermark(s, "t_yuki.png", b0, b0 + 32, -600, 40, 430, BLUSH, 50, drift=40.0)
+        watermark(s, "t_hasu.png", b0, b0 + 32, 600, 40, 430, BLUSH, 50)
     rays = s.tex("rays.png", 0, 40, 600, 600, 0.0, BLUSH, 0, -40)
     rays.at(b0 + 3, "expoOut", w=2300, h=2300, alpha=74).at(b1, "linear", rot=160.0)
     glow(s, 0, 40, 200, GOLD, 255, -8, b0, b1).at(b0 + 3, "expoOut", w=330, h=330, alpha=215)
@@ -873,6 +879,7 @@ def swing_scene(X):
     G.bgc(355, NIGHT, 250, 4)
     G.vig(355, NIGHT, 215, 4)
     L.sat.ramp(355, 359, 1.12, 1.0, "linear")
+    L.frost.ramp(355, 359, 0.12, 0.0, "linear")
     L.punch(355, 0.04, 1)
     fl.scatter(355, 359, R)
     snow(s, 0.7, 0.6, 6.0)
@@ -941,6 +948,38 @@ def chart_prism(X, ev, b0, b1, R=250.0, speed=6.5, dens=4):
             N.add(X.K[h % 6], b, 0, DRAG, vis=vis)
 
 
+def spectrum_ring(X, s, b0, b1, cx=0.0, cy=0.0, r0=330.0, n=16, hmax=220.0, width=15.0, z=-18, colors=None):
+    """the song's own spectrum as a ring of bars: bass at the bottom, highs at the top, mirrored left and right;
+    one value per eighth note from the analysis"""
+    m = X.m
+    b0, b1 = F(b0), F(b1)
+    half = n // 2
+    for k in range(n):
+        j = k if k < half else n - 1 - k
+        phi = 90.0 - (j + 0.5) * 180.0 / half
+        if k >= half:
+            phi = 180.0 - phi
+        band = 13 - round(j * 11 / (half - 1))
+        ca, sa = math.cos(math.radians(phi)), math.sin(math.radians(phi))
+        room = min(430.0 / max(abs(sa), 1e-3), 780.0 / max(abs(ca), 1e-3)) - r0 - 16
+        top = max(40.0, min(hmax, room))
+        e = s.tex("white.png", cx + ca * (r0 + 6), cy + sa * (r0 + 6), width, 12, 90.0 - phi, SNOW, 0, z, b0, b1)
+        e.at(b0 + 1, "sineOut", alpha=150)
+        b = b0
+        while b < b1:
+            v = m.vis(b, band)
+            h = 14 + top * v * v
+            nb = min(b + F(1, 2), b1)
+            e.at(nb, "expoOut", x=cx + ca * (r0 + h / 2), y=cy + sa * (r0 + h / 2), h=h)
+            b = nb
+        e.at(b1 - 1, "linear", alpha=150)
+        e.at(b1, "quadIn", alpha=0)
+        for bb, col in colors or ():
+            if b0 < bb < b1:
+                e.at(bb, "linear", color=e.kf["color"].value(bb))
+                e.at(bb + 1, "quadOut", color=col)
+
+
 def drop2(X):
     G, E, L, m, N, A, P, K = X.G, X.E, X.L, X.m, X.N, X.A, X.P, X.K
     R = X.R
@@ -985,7 +1024,7 @@ def drop2(X):
     ring_on(X, 427, 250.0, 0.061, SNOW, 6.5, 1, 0, 0)
     snow(s, 0.8, 1.6, 20.0, 427, 483)
     core = glow(s, 0, 0, 260, WHITE, 255, -8, 427, 483)
-    rays = s.tex("rays.png", 0, 0, 1900, 1900, 0.0, SNOW, 90, -40, 427, 483)
+    rays = s.tex("rays.png", 0, 0, 1900, 1900, 0.0, SNOW, 58, -40, 427, 483)
     rays.at(483, "linear", rot=-300.0)
     hexm = s.tex("hex.png", 0, 0, 2 * 250 / 0.9, 2 * 250 / 0.9, 30.0, SNOW, 0, -9, 427, 483)
     L.split.ramp(427, 429, 0.0, 0.006, "sineOut")
@@ -1003,7 +1042,7 @@ def drop2(X):
             core.at(bb, "linear", color=core.kf["color"].value(bb)).at(bb + 1, "quadOut", color=mix(col, WHITE, 0.5))
             rays.at(bb, "linear", color=rays.kf["color"].value(bb)).at(bb + 1, "quadOut", color=col)
             G.bgc(bb, mix((16, 16, 50), col, 0.16), 244, 1)
-            tunnel(s, bb, bb + 8, 1, col, 110, -24, 2, 60, 2900, 30.0)
+            tunnel(s, bb, bb + 8, 2, col, 84, -24, 3, 60, 2900, 30.0)
             if q:
                 G.flash(bb, col, 120, 1)
     for b, o in ev.items():
@@ -1016,6 +1055,7 @@ def drop2(X):
             G.flash(b, SNOW, 34, F(1, 2))
             shards(s, b, 0, 0, 6, 270, 620, 260, 30, SNOW, F(3, 4), 28, 150, phase=float(P.v("rot")) % 60)
     chart_prism(X, ev, 427, 483, 250.0, 6.5, 4)
+    spectrum_ring(X, s, 427, 483, colors=[(427 + 8 * q, mix(PRISM[q % 5], WHITE, 0.2)) for q in range(1, 7)])
     X.fx["kaleido"].add(457, 459, amount=[(457, 0.0, "quadOut"), (F(915, 2), 1.0, "linear"), (459, 1.0, "linear")], sides=6.0,
                         angle=[(457, 0.0, "linear"), (459, 60.0, "linear")], source=90.0)
     X.fx["kaleido"].add(467, 483, amount=[(467, 0.0, "sineOut"), (469, 0.7, "linear"), (481, 0.7, "quadIn"), (483, 0.0, "linear")],
@@ -1037,4 +1077,321 @@ def drop2(X):
     glow(s, 0, 0, 300, WHITE, 255, 30, 483, 487).at(487, "expoIn", w=2800, h=2800)
 
 
-SCENES = [intro, build_up, drop1, drop1b, breakdown, chorus1, swing_scene, drop2]
+
+# ================================================================== 487-519: LETTER
+def bridge(X):
+    G, E, L, m, N, A = X.G, X.E, X.L, X.m, X.N, X.A
+    R = X.R
+    N.fx = (220, 232, 255)
+    s = E.shot(487, 519)
+    caption(s, "t_ch6.png", 489, 503, y=-338)
+    G.flash(487, WHITE, 255, 3)
+    L.wash.ramp(487, 489, 1.0, 0.0, "expoOut")
+    G.bgc(487, NIGHT, 215)
+    G.vig(487, NIGHT, 170)
+    L.sat.ramp(487, 489, 1.0, 0.42, "sineOut")
+    L.frost.ramp(487, 491, 0.0, 0.4, "sineOut")
+    # the illustration again, nearly monochrome, panned slowly towards her face
+    pic = s.tex("cover_wide.png", 120, 10, 1820, None, 0.0, WHITE, 0, -60)
+    pic.at(489, "sineOut", alpha=255)
+    pic.at(519, "sineInOut", x=-110, y=-40, w=1980, h=th("cover_wide.png", 1980))
+    for sgn in (-1, 1):  # letterbox
+        bar = s.tex("white.png", 0, sgn * 520, 1800, 150, 0.0, NIGHT, 255, 62)
+        bar.at(490, "expoOut", y=sgn * 440).at(517, "linear", y=sgn * 440).at(519, "quadIn", y=sgn * 520)
+    snow(s, 0.6, 0.5, 4.0, a_in=3)
+    A.at(487, x=0, y=-300, rot=0, sx=0.0, a=210, spd=6.5, col=LINE).to(487, 490, "expoOut", sx=0.30)
+    ev = onsets(X, 487, 515)
+    px = pitch_map(X, 487, 515, 320)
+    last = F(0)
+    for b, o in ev.items():
+        if (o["pos"] * 2) % 1 or b - last < F(1, 2) or b < 488:
+            continue
+        if o["M"] > 0.5 or (o["P"] > 1.2 and o["H"] > 0.6):
+            x = px(b)
+            N.add(A, b, x if x is not None else 200 * math.sin(float(b)), TAP)
+            last = b
+            L.punch(b, 0.008, 1)
+            if o["M"] > 0.8:
+                sparkle(s, b, R.uniform(-600, 600), R.uniform(-150, 300), 150, SNOW, 2, 42)
+    for g0, g1 in ((F(3969, 8), F(993, 2)), (F(4083, 8), F(1021, 2)), (F(4099, 8), F(1025, 2))):  # the keys stutter
+        G.black(g0, g1, 215)
+        L.punch(g1, 0.02, 1)
+    # bar 128: a riser and a snare roll lift the picture
+    L.zoom.ramp(515, 519, 1.0, 1.06, "quadIn")
+    L.wash.ramp(517, 519, 0.0, 0.55, "quadIn")
+    for k in range(6):
+        b = F(1035, 2) + F(k, 4)
+        N.add(A, b, (-1 if k % 2 else 1) * (120 + 50 * k), TAP)
+        G.shake(b, 5 + 2 * k, 0.2, 0.2)
+
+
+# ================================================================== 519-551: the second build, the ice again
+def build2(X):
+    G, E, L, m, N, A = X.G, X.E, X.L, X.m, X.N, X.A
+    R = X.R
+    s = E.shot(519, 547)
+    G.flash(519, SNOW, 200, 2)
+    L.wash.ramp(519, 520, 0.55, 0.0, "expoOut")
+    L.zoom.ramp(519, 520, 1.06, 1.0, "expoOut")
+    L.sat.ramp(519, 527, 0.42, 1.0, "sineInOut")
+    L.frost.ramp(519, 547, 0.4, 0.85, "quadIn")
+    G.bgc(519, INDIGO, 225, 16)
+    G.vig(519, NIGHT, 210, 8)
+    pic = s.tex("cover_wide.png", -110, -40, 1980, None, 0.0, WHITE, 255, -60, 519, 545)
+    pic.at(535, "linear", w=2060, h=th("cover_wide.png", 2060))
+    pic.at(545, "quadIn", w=3400, h=th("cover_wide.png", 3400), y=-300, alpha=0)
+    snow(s, 0.8, 0.9, 8.0, 519, 535)
+    snow(s, 1.0, 1.8, 14.0, 535, 547)
+    A.at(519, y=-300, sx=0.30, a=255).to(519, 523, "sineOut", y=-250, sx=0.45, spd=8.0)
+    # off-beat bass: the picture breathes with it
+    side = 1
+    for k in range(16):
+        b = F(1039, 2) + k
+        side = -side
+        N.add(A, b, side * (340 - 8 * k), TAP)
+        L.punch(b, 0.018, F(3, 4))
+        ripple(s, b, side * (340 - 8 * k), -250, 10, 150, ICE, 150, 22, 1)
+    ev = onsets(X, 519, 535)
+    px = pitch_map(X, 519, 535, 260)
+    for b, o in ev.items():
+        if o["pos"] % 1 == 0 and o["M"] > 0.55:
+            x = px(b)
+            N.add(A, b, x if x is not None else 0, DRAG)
+    # four on the floor: the picture dissolves, the crystal grows
+    fk = s.tex("flake_b.png", 0, 40, 160, 160, 0.0, ICE, 0, -30, 535, 547)
+    fk.at(547, "quadIn", w=1000, h=1000, rot=150.0, alpha=130)
+    L.zoom.ramp(535, 547, 1.0, 1.07, "quadIn")
+    A.to(535, 547, "quadIn", y=0, spd=10.0)
+    for k, b in enumerate(range(535, 547)):
+        t = k / 11
+        x = (-1 if k % 2 == 0 else 1) * (480 - 280 * t)
+        if k % 4 == 0:
+            N.add(A, b, -abs(x), TAP)
+            N.add(A, b, abs(x), TAP)
+        else:
+            N.add(A, b, x, TAP)
+        L.punch(b, 0.012 + 0.02 * t, F(3, 4))
+        ripple(s, b, x, float(-250 + 250 * (t ** 2)), 10, 130 + 100 * t, ICE, 150, 22, 1)
+    N.add(A, 539, 0, HOLD, end=F(1093, 2))
+    # ---- bar 136: the kick-stops again; this time the cracks spell it out
+    s2 = E.shot(547, 551)
+    hits = [547, F(1095, 2), 548, F(1097, 2)]
+    X.fx["shatter"].add(547, 551, cells=5.0, seed=11.0, lineColor=(255, 222, 236),
+                        crack=[(547, 0.0, "expoOut"), (F(4377, 8), 0.26, "linear"), (F(1095, 2), 0.26, "expoOut"), (F(4381, 8), 0.48, "linear"),
+                               (548, 0.48, "expoOut"), (F(4385, 8), 0.72, "linear"), (F(1097, 2), 0.72, "quadOut"), (549, 1.0, "linear"), (551, 1.0, "linear")],
+                        power=[(547, 0.0, "linear"), (549, 0.0, "quadIn"), (551, 0.72, "linear")])
+    L.frost.ramp(547, 548, 0.85, 0.3, "expoOut")
+    L.zoom.ramp(547, 547 + EPSB, 1.07, 1.0)
+    L.sat.ramp(547, 547 + EPSB, 1.0, 0.3)
+    L.sat.ramp(549, 551, 0.3, 1.0, "quadIn")
+    G.bgc(547, (10, 14, 40), 245)
+    words = (("t_just.png", -300, 120, 560), ("t_love.png", 290, 30, 560), ("heart_o.png", 0, -190, 400), (None, 0, 0, 0))
+    for k, b in enumerate(hits):
+        L.invert.hold(b, 1.0, F(1, 8))
+        L.punch(b, 0.05 + 0.01 * k, F(1, 2))
+        G.shake(b, 16 + 4 * k, 0.5, 0.3)
+        w = (700, 1200, 1900, 2600)[k]
+        cr = s2.tex("crack.png", 0, 0, w, None, (0.0, 180.0, 0.0, 180.0)[k], BLUSH, 255, 58, b, hits[k + 1] if k < 3 else 551)
+        if k == 3:
+            cr.at(549, "linear", alpha=255).at(551, "quadIn", alpha=120, w=3200, h=th("crack.png", 3200))
+        tex_, x, y, ww = words[k]
+        if tex_:
+            col = mix(PINK, WHITE, 0.25) if k == 2 else SNOW
+            t = s2.tex(tex_, x, y, ww * 1.3, None, 0.0, col, 255, 64, b, 551)
+            t.at(b + F(1, 2), "expoOut", w=ww, h=th(tex_, ww))
+            t.at(550, "linear", alpha=255).at(551, "expoIn", alpha=0, w=ww * 1.6, h=th(tex_, ww * 1.6))
+        if k < 3:
+            N.add(A, b, -230, TAP)
+            N.add(A, b, 230, TAP)
+    A.at(547, y=0, sx=0.45, spd=9.0)
+    for k in range(4):
+        N.add(A, F(1097, 2) + F(k, 8), -300 + 200 * k, DRAG if k else TAP)
+    N.add(A, 549, 0, FLICK)
+    for k in range(5):
+        b = F(2199, 4) + F(k, 4)
+        N.add(A, b, (-1 if k % 2 else 1) * (360 - 60 * k), TAP)
+        G.shake(b, 8 + 3 * k, 0.3, 0.2)
+    L.zoom.ramp(549, 551, 1.0, 1.10, "expoIn")
+    L.wash.ramp(F(1099, 2), 551, 0.0, 0.9, "quadIn")
+    A.to(549, 551, "quadIn", y=-260)
+
+
+# ================================================================== 551-679: FULL BLOOM
+def chorus2(X):
+    G, E, L, m, N, A, Bt, P, K = X.G, X.E, X.L, X.m, X.N, X.A, X.Bt, X.P, X.K
+    R = X.R
+    fl = X.flower
+    s, ev, px = chorus(X, 551, last=True)
+    # more than the first time: the crystal turns behind the flower, a curtain of light hangs above it
+    em = s.tex("flake_a.png", 0, 40, 1500, 1500, 0.0, ICE, 0, -44, 551, 679)
+    em.at(555, "expoOut", w=1250, h=1250, alpha=62).at(679, "linear", rot=-260.0)
+    for k, (col, x0, x1, w) in enumerate(((PINK, -200, 140, 2200), (LAVENDER, 240, -160, 2600))):
+        au = s.tex("aurora.png", x0, 210, w, 560, 0.0, col, 0, -46 + k, 551, 679)
+        au.at(559, "sineOut", alpha=105 - 30 * k).at(679, "linear", x=x1)
+    # second half: a line above as well (the hi-hats move up there)
+    Bt.at(614, x=0, y=350, rot=180, sx=0.0, spd=9.5, col=BLUSH, a=255).to(614, 615, "expoOut", sx=0.45)
+    for it in N.items:
+        if it["jl"] is A and it["kind"] == DRAG and 615 <= it["b"] < 675:
+            it["jl"] = Bt
+    for bb in (581, 613, 645):  # the end of every eight bars folds into a crystal for a moment
+        X.fx["kaleido"].add(bb, bb + 2, amount=[(bb, 0.0, "quadOut"), (bb + F(1, 2), 0.9, "linear"), (bb + F(3, 2), 0.9, "quadIn"), (bb + 2, 0.0, "linear")],
+                            sides=6.0, angle=[(bb, 0.0, "linear"), (bb + 2, 60.0, "linear")], source=90.0, centerY=0.545)
+    # ---- bar 168: the riser; the flower closes into a bud of light
+    chart_ring(X, ev, 675, 678, 270.0, 6.0)
+    chart_line(X, ev, 675, 679, A, px, 4, drums=False)
+    P.to(675, 679, "quadIn", rot=P.v("rot") + 90.0)
+    ring_off(X, 678, 1)
+    Bt.to(675, 679, "quadIn", sx=0.0)
+    Bt.at(679, a=0)
+    fl.close(676, 679)
+    L.zoom.ramp(675, 679, 1.0, 1.10, "expoIn")
+    L.wash.ramp(677, 679, 0.0, 0.9, "quadIn")
+    A.to(677, 679, "expoIn", sx=0.0)
+    A.at(679, a=0)
+
+
+# ================================================================== 679-711: the crystal, at full speed
+def drop3(X):
+    G, E, L, m, N, A, P, K = X.G, X.E, X.L, X.m, X.N, X.A, X.P, X.K
+    R = X.R
+    N.fx = (196, 228, 255)
+    ev = onsets(X, 679, 711)
+    px = pitch_map(X, 679, 711, 400)
+    s = E.shot(679, 711)
+    G.flash(679, WHITE, 255, 2)
+    L.wash.ramp(679, 680, 0.9, 0.0, "expoOut")
+    L.zoom.ramp(679, 680, 1.10, 1.0, "expoOut")
+    L.sat.ramp(679, 680, 1.12, 1.0, "linear")
+    L.frost.ramp(679, 680, 0.12, 0.0, "linear")
+    G.shake(679, 28, 1.4, 0.5)
+    shock(X, 679, 0.14, 0.9, 2)
+    G.bgc(679, DEEP, 236)
+    G.vig(679, NIGHT, 225)
+    em = s.tex("flake_a.png", 0, 10, 1600, 1600, 0.0, SNOW, 170, -30)
+    em.at(681, "expoOut", w=1060, h=1060, alpha=110).at(707, "linear", rot=-320.0)
+    em.at(711, "expoIn", w=0, h=0, rot=-520.0)
+    glow(s, 0, 10, 1000, SKY, 80, -32)
+    tunnel(s, 679, 707, 2, ICE, 70, -34, 4, 80, 2900, 30.0, "hex.png", 0, 10)
+    snow(s, 1.0, 2.4, 22.0, 679, 711)
+    drum_fx(X, s, {b: o for b, o in ev.items() if b < 707}, 0.04, 0.014, 0, 10)
+    P.at(679, x=0, y=10, rot=0)
+    star_on(X, 679, 0.30, LINE, 9.0)
+    rot = 0.0
+    for bar in range(169, 176):
+        d = 120.0 if bar % 2 else -120.0
+        P.to(B(bar), B(bar + 1), "sineInOut", rot=rot + d)
+        rot += d
+    chart_star(X, ev, 679, 707, K[:3], px, 5)
+    L.roll.ramp(679, 687, 0.0, 4.0, "sineInOut")  # the long falling 808
+    L.roll.ramp(687, 695, 4.0, 0.0, "sineInOut")
+    X.fx["kaleido"].add(695, 707, amount=[(695, 0.0, "sineOut"), (697, 0.85, "linear"), (706, 0.85, "quadIn"), (707, 0.0, "linear")],
+                        sides=6.0, angle=[(695, 0.0, "linear"), (707, 120.0, "linear")], source=90.0)
+    # ---- bar 176: seven blows; each one is a white frame and a crack, the last one lets go of everything
+    blows = [(707, 3), (708, 2), (F(1417, 2), 3), (F(1419, 2), 2), (710, 3), (F(2841, 4), 2), (F(2843, 4), 3)]
+    P.to(707, 711, "quadOut", rot=rot + 60.0)
+    for k, (b, n_) in enumerate(blows):
+        L.invert.hold(b, 1.0, F(1, 8))
+        L.punch(b, 0.05, F(1, 2))
+        G.shake(b, 16 + 2 * k, 0.6, 0.25)
+        end = blows[k + 1][0] if k + 1 < len(blows) else 711
+        s.tex("crack.png", 0, 10, 900 + 300 * k, None, 51.0 * k, SNOW, 230, 58, b, end)
+        for q in range(n_):
+            if n_ == 3:
+                N.add(K[q], b, 0, FLICK if k == len(blows) - 1 else TAP)
+            else:
+                N.add(K[(k + q) % 3], b, 380 * (1 if q else -1), TAP)
+    star_off(X, 710, 1)
+    L.wash.ramp(F(1421, 2), 711, 0.0, 0.85, "quadIn")
+
+
+# ================================================================== 711-782: AFTERGLOW
+def outro(X):
+    G, E, L, m, N, A = X.G, X.E, X.L, X.m, X.N, X.A
+    R = X.R
+    sw = X.swing
+    N.fx = (255, 220, 236)
+    # ---- the swing again, coming to rest
+    s = E.shot(711, 743)
+    caption(s, "t_ch8.png", 711, 727)
+    G.flash(711, WHITE, 255, 3)
+    L.wash.ramp(711, 713, 0.85, 0.0, "expoOut")
+    G.shake(711, 20, 0.8, 0.5)
+    shock(X, 711, 0.14, 0.9, 3)
+    G.bgc(711, NIGHT, 250)
+    G.vig(711, NIGHT, 215)
+    night_sky(X, s, 711, 743, aurora=(mix(PINK, LAVENDER, 0.4), MINT), a_in=3)
+    snow(s, 0.7, 0.42, 3.0, 711, 743, a_in=2)
+    X.fx["mirror"].add(711, 743, horizon=0.2, depth=2.6, ripple=0.004, tint=(190, 200, 255),
+                       amount=[(711, 0.0, "sineOut"), (714, 0.6, "linear"), (741, 0.6, "sineIn"), (743, 0.0, "linear")])
+    sw.on(711, 2)
+    sw.swing(711, 739, 8.0, 2.5, 4)
+    ev = onsets(X, 711, 739)
+    px = pitch_map(X, 711, 739, 300)
+    chart_line(X, ev, 711, 739, sw.seat, px, 3, kick_x=300, snare_x=110, hats=False, holds=True)
+    for bar in range(177, 184):
+        bb = B(bar)
+        heart_up(s, bb, R.uniform(-300, 300), -120, R.uniform(46, 70), mix(PINK, SNOW, 0.3), R.uniform(200, 320), 6, 24, 170, R.uniform(-60, 60))
+    # bar 184: one more blow, a few falling hits; the ropes fade
+    G.flash(739, SNOW, 220, 2)
+    G.shake(739, 18, 0.8, 0.4)
+    L.punch(739, 0.05, 2)
+    for k, (bb, xs) in enumerate(((739, (-240, 240)), (F(1481, 2), (160,)), (741, (-160,)), (F(1483, 2), (80,)), (F(1485, 2), (0,)))):
+        for x in xs:
+            N.add(sw.seat, bb, x, TAP if k < 4 else FLICK)
+        sparkle(s, bb, R.uniform(-500, 500), R.uniform(-60, 320), 240, SNOW, 2, 42)
+        if k:
+            L.punch(bb, 0.02, 1)
+    sw.off(741, 2)
+    # ---- the picture, as at the beginning; the voices stop three times
+    s = E.shot(743, 775)
+    G.bgc(743, NIGHT, 205, 2)
+    G.vig(743, NIGHT, 150, 2)
+    L.frost.ramp(743, 747, 0.0, 0.35, "sineOut")
+    pic = s.tex("cover_wide.png", 0, -20, 1900, None, 0.0, WHITE, 0, -60)
+    pic.at(746, "sineOut", alpha=255)
+    pic.at(769, "sineInOut", x=0, y=0, w=1700, h=th("cover_wide.png", 1700))
+    pic.at(775, "sineInOut", x=-150, y=-290, w=2300, h=th("cover_wide.png", 2300))
+    snow(s, 0.6, 0.5, 4.0, 743, 775, a_in=3)
+    A.at(743, x=0, y=-310, rot=0, sx=0.0, a=200, spd=6.5, col=LINE).to(743, 746, "expoOut", sx=0.30)
+    ev = onsets(X, 743, 771)
+    px = pitch_map(X, 743, 771, 300)
+    last = F(0)
+    for b, o in ev.items():
+        if (o["pos"] * 2) % 1 or b - last < 1 or m.silent(b):
+            continue
+        if (o["P"] > 1.15 and o["H"] > 0.5) or o["M"] > 0.6:
+            x = px(b)
+            N.add(A, b, x if x is not None else 180 * math.sin(float(b)), TAP)
+            last = b
+            L.punch(b, 0.008, 1)
+    for g0, g1 in ((F(5993, 8), 750), (F(6057, 8), 758), (F(3061, 4), 766)):
+        G.black(g0, g1, 235)
+        L.punch(g1, 0.03, 1)
+        G.flash(g1, SNOW, 70, 1)
+    # ---- the last chord: a heart closes on her; then the title on black
+    G.hud_alpha(771, 0, 2)
+    N.add(A, 771, -200, TAP)
+    N.add(A, 771, 200, TAP)
+    A.to(771, 773, "sineIn", a=0, sx=0.0)
+    G.flash(771, BLUSH, 70, 2)
+    L.punch(771, 0.02, 2)
+    cx, cy = 0.5 + (212 - 150) / 1600, 0.5 + (437 - 290) / 900  # her face at the end of the push-in
+    X.fx["heart"].add(770, 775, centerX=cx, centerY=cy, color=NIGHT, rimColor=(255, 170, 206), feather=0.004,
+                      cover=[(770, 0.0, "linear"), (771, 1.0, "linear"), (775, 1.0, "linear")],
+                      size=[(770, 2.6, "linear"), (771, 2.6, "quartOut"), (773, 0.62, "sineInOut"), (F(1549, 2), 0.20, "quadIn"), (775, 0.0, "linear")],
+                      rim=[(770, 0.0, "linear"), (771, 0.0, "sineOut"), (772, 0.9, "linear"), (775, 0.9, "linear")])
+    s = E.shot(775, 782)
+    G.bgc(775, NIGHT, 255)
+    G.vig(775, NIGHT, 120)
+    L.frost.ramp(775, 775 + EPSB, 0.35, 0.0)
+    t = s.tex("t_title.png", 0, 24, 660, None, 0.0, SNOW, 0, 52, 775, 782)
+    t.at(777, "sineOut", alpha=255, y=40).at(780, "linear", alpha=255).at(782, "sineIn", alpha=0)
+    hb = s.tex("heart.png", 0, -92, 0, 0, 0.0, PINK, 255, 53, 776, 782)
+    hb.at(777, "backOut", w=40, h=40).at(F(1555, 2), "sineInOut", w=46, h=46).at(778, "sineInOut", w=40, h=40)
+    hb.at(780, "linear", alpha=255).at(782, "sineIn", alpha=0)
+    f = s.tex("t_fin.png", 0, -168, 78, None, 0.0, ICE, 0, 52, 776, 782)
+    f.at(778, "sineOut", alpha=200).at(780, "linear", alpha=200).at(782, "sineIn", alpha=0)
+    scroll(s, "snow_a.png", SNOW, 90, 1900, 60, -22, 775, 782, rot=3.0, a_in=2, a_out=2)
+
+
+SCENES = [intro, build_up, drop1, drop1b, breakdown, chorus1, swing_scene, drop2, bridge, build2, chorus2, drop3, outro]

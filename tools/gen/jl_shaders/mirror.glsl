@@ -1,6 +1,10 @@
 #version 100
 // Just Love - frozen lake: everything above the horizon is reflected below it, with slow ripples.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
 
 varying lowp vec2 uv;
 uniform vec2 screenSize;

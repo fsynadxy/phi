@@ -71,6 +71,7 @@ TEX = {
     "cover_sq.png": (900, 900), "cover_wide.png": (1280, 720),
 }
 SHADERS = ("lens", "kaleido", "shatter", "mirror", "heart", "glow")
+LITE = bool(os.environ.get("JL_LITE"))  # no custom GLSL at all (only Phira's built-in shockwave): the fallback package
 
 
 def _text_sizes():
@@ -171,7 +172,7 @@ def snow(s, amount=1.0, speed=1.0, wind=0.0, start=None, end=None, a_in=0, a_out
         scroll(s, "snow_b.png", color, int(200 * amount), 2100, 290 * speed, 46, start, end, rot=wind, a_in=a_in, a_out=a_out)
 
 
-def caption(s, tex, b0, b1, x=-560, y=-372, w=None, color=ICE, a=190, z=60):
+def caption(s, tex, b0, b1, x=-560, y=-346, w=None, color=ICE, a=190, z=60):
     """a small chapter caption with a hairline, bottom left"""
     b0, b1 = F(b0), F(b1)
     w = w or TEX[tex][0] * 0.42
@@ -181,6 +182,15 @@ def caption(s, tex, b0, b1, x=-560, y=-372, w=None, color=ICE, a=190, z=60):
     r = s.tex("white.png", x - 26, y, 0, 2.5, 0.0, color, a, z, b0, b1)
     r.at(b0 + 2, "expoOut", w=34).at(b1 - 2, "linear", alpha=a).at(b1, "quadIn", alpha=0)
     return t
+
+
+def watermark(s, tex, b0, b1, x, y, w, color, a=46, z=-36, drift=-40.0):
+    """a large, faint glyph behind everything (雪 for the crystal, 蓮 for the lotus)"""
+    b0, b1 = F(b0), F(b1)
+    e = s.tex(tex, x, y, w, None, 0.0, color, 0, z, b0, b1)
+    e.at(b0 + 3, "sineOut", alpha=a).at(b1 - 3, "linear", alpha=a).at(b1, "sineIn", alpha=0)
+    e.at(b1, "linear", x=x + drift)
+    return e
 
 
 def heart_up(s, b, x, y, size, color=PINK, rise=150, life=3, z=24, a=210, sway=30.0):
@@ -208,7 +218,7 @@ def build(c):
     X = Ctx()
     X.c, X.m, X.G, X.E, X.N, X.L, X.R, X.root = c, m, G, E, N, L, R, root
     X.JL = JL
-    X.fx = {name: FxTrack(c, f"/{name}.glsl") for name in SHADERS if name != "lens"}
+    X.fx = {name: (_NoFx() if LITE else FxTrack(c, f"/{name}.glsl")) for name in SHADERS if name != "lens"}
     X.pre = []  # preset effects: (name, b0, b1, vars)
     # judge lines (all ride on the stage root so that a shake moves everything)
     X.A = JL(c, "line_a", 110, root, y=-220, sx=0.0)
@@ -225,19 +235,34 @@ def build(c):
     # effects, in drawing order: scene shaders first, the lens (camera) last
     for name, b0, b1, v in X.pre:
         c.effect(name, b0, b1, v)
-    c.effect("/lens.glsl", 0, END, L.vars(END))
+    if not LITE:
+        c.effect("/lens.glsl", 0, END, L.vars(END))
     return E, n
 
 
+class _NoFx:
+    def add(self, *a, **k):
+        pass
+
+
 def make():
-    c = Chart(OFFSET_MS, dict(INFO, id="claude-just-love"), bpm=BPM, compact=True)
+    info = dict(INFO)
+    if LITE:
+        info["level"] = "SP Lv.? lite"
+        info["tip"] = "观赏谱（无自定义着色器版）· 建议开启 Autoplay 观看"
+    c = Chart(OFFSET_MS, dict(info, id="claude-just-love-lite" if LITE else "claude-just-love"), bpm=BPM, compact=True)
     E, n = build(c)
     print(f"pooled lines: {E.line_count()}  notes: {n}")
-    return c, INFO
+    return c, info
 
 
 def assets(out, cover=None):
     import jl_assets
     jl_assets.make(out, cover or os.environ.get("JL_COVER"))
     for name in SHADERS:
-        shutil.copy(os.path.join(HERE, "jl_shaders", f"{name}.glsl"), os.path.join(out, f"{name}.glsl"))
+        dst = os.path.join(out, f"{name}.glsl")
+        if LITE:
+            if os.path.exists(dst):
+                os.remove(dst)
+        else:
+            shutil.copy(os.path.join(HERE, "jl_shaders", f"{name}.glsl"), dst)
