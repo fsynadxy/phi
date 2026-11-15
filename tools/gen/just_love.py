@@ -56,7 +56,7 @@ INFO = {
     "intro": "以封面为题的观赏谱：初雪、结晶、雪莲绽放、秋千与冰湖。全曲 160 BPM，谱面与演出逐拍对齐。",
     "holdPartialCover": False,
     "noteUniformScale": False,
-    "forceAspectRatio": False,
+    "forceAspectRatio": True,  # the line geometry is built for 16:9; narrower screens get bars instead of a stretched picture
     "useRpe170Speed": False,
     "useAttachUiFix": True,
 }

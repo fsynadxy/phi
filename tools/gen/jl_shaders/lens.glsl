@@ -8,9 +8,25 @@ precision highp float;
 precision mediump float;
 #endif
 
-varying lowp vec2 uv;
+varying vec2 uv;
 uniform vec2 screenSize;
 uniform sampler2D screenTexture;
+uniform vec2 UVScale;
+
+// Phira gives uv in the coordinates of the whole render target; when the chart is letterboxed or
+// pillarboxed it covers only the middle UVScale of it. Positions are worked out in chart coordinates
+// (0..1 across the chart, y up) and converted back for texture lookups.
+vec2 toChart(vec2 t) {
+  return (t - vec2(0.5)) / UVScale + vec2(0.5);
+}
+
+vec2 toTex(vec2 c) {
+  return (c - vec2(0.5)) * UVScale + vec2(0.5);
+}
+
+float chartAspect() {
+  return screenSize.x * UVScale.x / (screenSize.y * UVScale.y);
+}
 
 uniform float zoom; // %1.0%
 uniform float roll; // %0.0%
@@ -29,8 +45,9 @@ vec2 mirrored(vec2 p) {
 }
 
 void main() {
-  float aspect = screenSize.x / screenSize.y;
-  vec2 p = (uv - vec2(0.5)) * vec2(aspect, 1.0);
+  float aspect = chartAspect();
+  vec2 c0 = toChart(uv);
+  vec2 p = (c0 - vec2(0.5)) * vec2(aspect, 1.0);
   float a = radians(roll);
   float cs = cos(a);
   float sn = sin(a);
@@ -38,19 +55,19 @@ void main() {
   vec2 q = p / vec2(aspect, 1.0) + vec2(0.5 - shiftX, 0.5 - shiftY);
   vec2 d = (q - vec2(0.5)) * split;
   vec3 col;
-  col.g = texture2D(screenTexture, mirrored(q)).g;
+  col.g = texture2D(screenTexture, toTex(mirrored(q))).g;
   if (abs(split) > 0.00001) {
-    col.r = texture2D(screenTexture, mirrored(q + d)).r;
-    col.b = texture2D(screenTexture, mirrored(q - d)).b;
+    col.r = texture2D(screenTexture, toTex(mirrored(q + d))).r;
+    col.b = texture2D(screenTexture, toTex(mirrored(q - d))).b;
   } else {
-    vec3 c = texture2D(screenTexture, mirrored(q)).rgb;
+    vec3 c = texture2D(screenTexture, toTex(mirrored(q))).rgb;
     col.r = c.r;
     col.b = c.b;
   }
   float luma = dot(col, vec3(0.299, 0.587, 0.114));
   col = mix(vec3(luma), col, sat);
   col = mix(col, vec3(1.0) - col, clamp(invert, 0.0, 1.0));
-  vec2 e = uv * (vec2(1.0) - uv);
+  vec2 e = c0 * (vec2(1.0) - c0);
   float edge = 1.0 - pow(clamp(e.x * e.y * 16.0, 0.0, 1.0), 0.35);
   col = mix(col, frostColor.rgb, clamp(frost * edge * frostColor.a, 0.0, 1.0));
   col = mix(col, washColor.rgb, clamp(wash * washColor.a, 0.0, 1.0));

@@ -7,9 +7,25 @@ precision highp float;
 precision mediump float;
 #endif
 
-varying lowp vec2 uv;
+varying vec2 uv;
 uniform vec2 screenSize;
 uniform sampler2D screenTexture;
+uniform vec2 UVScale;
+
+// Phira gives uv in the coordinates of the whole render target; when the chart is letterboxed or
+// pillarboxed it covers only the middle UVScale of it. Positions are worked out in chart coordinates
+// (0..1 across the chart, y up) and converted back for texture lookups.
+vec2 toChart(vec2 t) {
+  return (t - vec2(0.5)) / UVScale + vec2(0.5);
+}
+
+vec2 toTex(vec2 c) {
+  return (c - vec2(0.5)) * UVScale + vec2(0.5);
+}
+
+float chartAspect() {
+  return screenSize.x * UVScale.x / (screenSize.y * UVScale.y);
+}
 
 uniform float crack; // %0.0%
 uniform float power; // %0.0%
@@ -26,8 +42,9 @@ vec2 hash2(vec2 p) {
 }
 
 void main() {
-  float aspect = screenSize.x / screenSize.y;
-  vec2 sp = vec2(uv.x * aspect, uv.y);
+  float aspect = chartAspect();
+  vec2 cu = toChart(uv);
+  vec2 sp = vec2(cu.x * aspect, cu.y);
   vec2 p = sp * cells;
   vec2 ip = floor(p);
   vec2 fp = fract(p);
@@ -71,7 +88,7 @@ void main() {
   vec2 src = cen + rel - away * (0.10 + 0.25 * h.y) * k - (h - vec2(0.5)) * 0.05 * k;
   vec2 q = vec2(src.x / aspect, src.y);
   q = abs(mod(q + vec2(1.0), 2.0) - vec2(1.0));
-  vec3 col = texture2D(screenTexture, q).rgb;
+  vec3 col = texture2D(screenTexture, toTex(q)).rgb;
   // facets catch the light differently
   col *= 1.0 + (h.y - 0.5) * 0.5 * k;
   // shards drop out one after another once power passes 0.5

@@ -78,6 +78,8 @@ chart.json  info.yml  [extra.json]  song.ogg  illustration.jpg  [贴图.png]  [�
 - Phira 提供：`varying vec2 uv;`、`uniform sampler2D screenTexture;`、`uniform vec2 screenSize;`、`uniform float time;`（秒）。自定义变量在声明行末写默认值：`uniform float zoom; // %1.0%`、`uniform vec4 tint; // %0.8, 0.9, 1.0, 1.0%`（Phira 用正则读这个注释；vec4 默认值是 0..1 浮点，而 extra.json 里的颜色仍要写 4 个整数）。
 - 精度：`#ifdef GL_FRAGMENT_PRECISION_HIGH` 选 highp，否则 mediump。`uv` 可以不写 `lowp`（片元与顶点着色器里的 varying 精度不必一致），写 `lowp` 在部分手机上只有 8 位，采样会成块。
 - **方向：`uv = (0,0)` 是谱面左下角，y 向上**。推导：prpr-macroquad 的 Camera2D 不做渲染目标翻转；谱面以模型矩阵 (1,-1) 加相机 `zoom.y = -aspect` 画进渲染目标，特效矩形左下角顶点的纹理坐标是 (0,0)，经同样的变换落在底部，特效通道保持图像方向。
+- **用多条线拼几何图形（六边形、星形、带绳子的秋千）时，在 info.yml 写 `forceAspectRatio: true`**。不写的话，在比 16:9 更窄的屏幕（iPad 等 4:3）上 Phira 会把谱面纵向拉伸：线的 y 坐标按屏幕比例放大，但线的角度和长度不变，拼好的图形会散开。写了之后窄屏上下留黑边，画面与 16:9 一致。
+- 着色器里用 `uniform vec2 UVScale;` 把 uv 换算成谱面坐标：`(uv - 0.5) / UVScale + 0.5`，采样前再乘回去；谱面宽高比是 `screenSize * UVScale` 的比值（`jl_shaders/*.glsl` 开头的 `toChart / toTex / chartAspect`）。16:9 屏幕上 UVScale 为 (1,1)，结果不变。
 - 非 16:9 屏幕：渲染目标是整个屏幕大小，谱面区域居中，`uv` 是整屏纹理中的坐标（`UVScale` = 谱面区域 / 屏幕），`screenSize` 是整屏大小。所以以 (0.5, 0.5) 为中心的效果最稳；用 `screenSize` 算宽高比画出的形状不会变形，但离开中心的横向位置会随屏幕宽度略有偏移。
 - 每个特效是一个全屏通道。镜头类动画（推拉、滚转、色散、闪白）用**一个常驻着色器 + 关键帧变量**做，比开很多短特效省（`jl_core.Lens` 会把这些轨道烘焙成关键帧，缓动用 easingLeft/Right 截取）。
 - 玩家可以在设置里关掉特效，或开 NO_SHADER 模组：画面在没有特效时也要能看。可以像 `just_love.py` 那样同时出一个只用内置着色器的 lite 包。

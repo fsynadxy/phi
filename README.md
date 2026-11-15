@@ -157,6 +157,7 @@ python tools/gen/build.py out --variant dust_walk --song song.ogg --pez walk_in_
 
 - 自定义着色器（`tools/gen/jl_shaders/`）：`lens`（贯穿全曲的镜头：推拉、滚转、色散、饱和度、反色帧、白场、霜边，一个常驻通道加关键帧变量）、`kaleido`（雪花万花筒）、`shatter`（碎冰）、`mirror`（冰湖倒影）、`heart`（心形光圈）、`glow`（柔光）。全部在无头 Chromium 的 WebGL 1（ANGLE，GLSL ES 1.00）中编译通过；坐标方向按 Phira 及其 macroquad 分支的源码核对过（见指南 5b）
 - 还有一个 **lite 版**（等级 `SP Lv.? lite`）：去掉全部自定义着色器，只保留内置的 shockwave，note 与画面编排完全相同。如果完整版在你的设备上加载失败或太卡，就用这个
+- `forceAspectRatio: true`：在比 16:9 更窄的屏幕（如 iPad）上以 16:9 显示并留边，否则六边形、雪花、秋千这些由多条线拼成的图形会被纵向拉散；自定义着色器也按谱面区域换算坐标
 - 雪花旋转时，旋臂上的 note 会沿判定线的真实运动路径模拟入场，自动选择从画面内侧落下的一面（`jl_core.Notes` 的 `auto`）
 - 这是观赏谱，没有按可玩性限制：有 148 处三指同时（雪花中心三向汇聚的 flick），1 秒峰值 18 个
 - 字体：Pinyon Script、Cormorant Garamond、Jost、Shippori Mincho（均为 SIL OFL 1.1），预先渲染在 `tools/data/justlove/`

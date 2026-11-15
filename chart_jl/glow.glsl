@@ -6,22 +6,38 @@ precision highp float;
 precision mediump float;
 #endif
 
-varying lowp vec2 uv;
+varying vec2 uv;
 uniform vec2 screenSize;
 uniform sampler2D screenTexture;
+uniform vec2 UVScale;
+
+// Phira gives uv in the coordinates of the whole render target; when the chart is letterboxed or
+// pillarboxed it covers only the middle UVScale of it. Positions are worked out in chart coordinates
+// (0..1 across the chart, y up) and converted back for texture lookups.
+vec2 toChart(vec2 t) {
+  return (t - vec2(0.5)) / UVScale + vec2(0.5);
+}
+
+vec2 toTex(vec2 c) {
+  return (c - vec2(0.5)) * UVScale + vec2(0.5);
+}
+
+float chartAspect() {
+  return screenSize.x * UVScale.x / (screenSize.y * UVScale.y);
+}
 
 uniform float strength; // %0.6%
 uniform float radius; // %0.012%
 uniform float threshold; // %0.55%
 
 vec3 bright(vec2 q) {
-  vec3 c = texture2D(screenTexture, clamp(q, vec2(0.0), vec2(1.0))).rgb;
+  vec3 c = texture2D(screenTexture, clamp(q, toTex(vec2(0.0)), toTex(vec2(1.0)))).rgb;
   return max(c - vec3(threshold), vec3(0.0));
 }
 
 void main() {
-  float aspect = screenSize.x / screenSize.y;
-  vec2 r1 = vec2(radius / aspect, radius);
+  float aspect = chartAspect();
+  vec2 r1 = vec2(radius / aspect, radius) * UVScale;
   vec2 r2 = r1 * 2.2;
   vec3 col = texture2D(screenTexture, uv).rgb;
   vec3 acc = bright(uv) * 0.16;

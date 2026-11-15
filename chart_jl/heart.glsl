@@ -6,9 +6,25 @@ precision highp float;
 precision mediump float;
 #endif
 
-varying lowp vec2 uv;
+varying vec2 uv;
 uniform vec2 screenSize;
 uniform sampler2D screenTexture;
+uniform vec2 UVScale;
+
+// Phira gives uv in the coordinates of the whole render target; when the chart is letterboxed or
+// pillarboxed it covers only the middle UVScale of it. Positions are worked out in chart coordinates
+// (0..1 across the chart, y up) and converted back for texture lookups.
+vec2 toChart(vec2 t) {
+  return (t - vec2(0.5)) / UVScale + vec2(0.5);
+}
+
+vec2 toTex(vec2 c) {
+  return (c - vec2(0.5)) * UVScale + vec2(0.5);
+}
+
+float chartAspect() {
+  return screenSize.x * UVScale.x / (screenSize.y * UVScale.y);
+}
 
 uniform float size; // %0.5%
 uniform float cover; // %1.0%
@@ -33,8 +49,8 @@ float sdHeart(vec2 p) {
 }
 
 void main() {
-  float aspect = screenSize.x / screenSize.y;
-  vec2 p = (uv - vec2(centerX, centerY)) * vec2(aspect, 1.0);
+  float aspect = chartAspect();
+  vec2 p = (toChart(uv) - vec2(centerX, centerY)) * vec2(aspect, 1.0);
   float s = max(size, 0.0001);
   float d = sdHeart(p / s + vec2(0.0, 0.55)) * s;
   vec3 col = texture2D(screenTexture, uv).rgb;
