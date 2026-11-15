@@ -72,6 +72,17 @@ chart.json  info.yml  [extra.json]  song.ogg  illustration.jpg  [贴图.png]  [�
 - `noise` 是静态抖动，长时间开会把细线和文字磨糊；做长段特效优先用 `chromatic / shockwave / radialBlur`。
 - 特效会叠加后期开销，低端机上提示用户可关特效。
 
+## 5b. 自定义着色器（读 prpr 与 prpr-macroquad 源码得出，未真机试）
+
+- extra.json 里写 `"shader": "/lens.glsl"`（斜杠开头 = 包内文件）。**任何一个着色器编译失败，整个 extra.json 解析失败，谱面无法加载**（`Effect::new` 的错误会一路传上去）。交付前用 `node tools/gen/glfx.js validate *.glsl` 在无头 Chromium 的 WebGL 1（ANGLE，GLSL ES 1.00，比多数手机驱动严格）里编译一遍；源码只用 ASCII。
+- Phira 提供：`varying vec2 uv;`、`uniform sampler2D screenTexture;`、`uniform vec2 screenSize;`、`uniform float time;`（秒）。自定义变量在声明行末写默认值：`uniform float zoom; // %1.0%`、`uniform vec4 tint; // %0.8, 0.9, 1.0, 1.0%`（Phira 用正则读这个注释；vec4 默认值是 0..1 浮点，而 extra.json 里的颜色仍要写 4 个整数）。
+- 精度：`#ifdef GL_FRAGMENT_PRECISION_HIGH` 选 highp，否则 mediump。`uv` 可以不写 `lowp`（片元与顶点着色器里的 varying 精度不必一致），写 `lowp` 在部分手机上只有 8 位，采样会成块。
+- **方向：`uv = (0,0)` 是谱面左下角，y 向上**。推导：prpr-macroquad 的 Camera2D 不做渲染目标翻转；谱面以模型矩阵 (1,-1) 加相机 `zoom.y = -aspect` 画进渲染目标，特效矩形左下角顶点的纹理坐标是 (0,0)，经同样的变换落在底部，特效通道保持图像方向。
+- 非 16:9 屏幕：渲染目标是整个屏幕大小，谱面区域居中，`uv` 是整屏纹理中的坐标（`UVScale` = 谱面区域 / 屏幕），`screenSize` 是整屏大小。所以以 (0.5, 0.5) 为中心的效果最稳；用 `screenSize` 算宽高比画出的形状不会变形，但离开中心的横向位置会随屏幕宽度略有偏移。
+- 每个特效是一个全屏通道。镜头类动画（推拉、滚转、色散、闪白）用**一个常驻着色器 + 关键帧变量**做，比开很多短特效省（`jl_core.Lens` 会把这些轨道烘焙成关键帧，缓动用 easingLeft/Right 截取）。
+- 玩家可以在设置里关掉特效，或开 NO_SHADER 模组：画面在没有特效时也要能看。可以像 `just_love.py` 那样同时出一个只用内置着色器的 lite 包。
+- 预览：`tools/gen/jl_preview.py <包目录> out.png 节拍,节拍,...`，用 glfx.js 跑真实着色器（内置着色器取自 `PHIRA_SRC` 指向的 phira 源码）。
+
 ## 6. 避坑清单（真实踩过的）
 
 1. 颜色变量写成浮点 → 整个 extra.json 解析失败。
@@ -83,6 +94,9 @@ chart.json  info.yml  [extra.json]  song.ogg  illustration.jpg  [贴图.png]  [�
 7. note 落在屏幕外 / 隐形线上 / 太近重叠；一瞬间超过两个触点（`playcheck.py` 可查）。
 8. 判定线数量别无节制：每帧可见几十条没问题，几百条常驻会卡。长演出用「线池」复用（见 `madlib.py` 的 `Engine`）。
 9. 想要简洁的字体效果，直接用预渲染文字贴图（`tools/gen/dust_assets.py` 的 `render_text`），不要依赖文字线（Phira 文字线用内置 UI 字体，且字号固定）。
+10. 会转动的判定线上，离中心远的 note 容易从屏幕边缘切入、只露出零点几秒。按 note 实际入场路径逐帧模拟，选择从画面内侧落下的一面（`jl_core.Notes` 的 `auto=True`）。
+11. `useRpe170Speed: false` 时速度事件只按线性解读，变速请写线性缓动。
+12. 鼓点瞬态要在时域上测：长窗口的谱通量会比真实起音早 20 ms 以上（`tools/analysis/jl_steps.py` 开头有做法）。
 
 ## 7. 交付前自检
 

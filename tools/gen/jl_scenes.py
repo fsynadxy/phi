@@ -104,6 +104,7 @@ def intro(X):
 def build_up(X):
     G, E, L, m, N, A = X.G, X.E, X.L, X.m, X.N, X.A
     s = E.shot(35, 67)
+    caption(s, "t_ch1.png", 37, 53)
     G.flash(35, ICE, 120, 2)
     G.bgc(35, INDIGO, 225, 12)
     G.vig(35, NIGHT, 215, 8)
@@ -286,24 +287,24 @@ def chart_star(X, ev, b0, b1, lines, px, dens=4, hats=True, rad=430):
     for b, o in ev.items():
         if not b0 <= b < b1:
             continue
-        if is_snare(o):
-            for ln in lines:
-                N.add(ln, b, 0, FLICK)
+        if is_snare(o):  # three flicks meet in the hub from directions 120 degrees apart
+            for k, ln in enumerate(lines):
+                N.add(ln, b, 0, FLICK, above=k % 2 == 0)
             continue
         if o["K"] > 0.45:
             cyc += 1
             side = -side
-            N.add(lines[cyc % n], b, side * rad, TAP, above=cyc % 2 == 0)
+            N.add(lines[cyc % n], b, side * rad, TAP, above=cyc % 2 == 0, auto=True)
         elif melodic(o, dens):
             cyc += 1
             side = -side
             x = px(b)
             r = 180 + (abs(x) * 0.55 if x is not None else 120)
-            N.add(lines[cyc % n], b, side * r, TAP, above=cyc % 2 == 0)
+            N.add(lines[cyc % n], b, side * r, TAP, above=cyc % 2 == 0, auto=True)
         elif hats and (o["pos"] * 2) % 1 == 0 and (o["T"] > 0.3 or o["F"] > 0.3):
             cyc += 1
             side = -side
-            N.add(lines[cyc % n], b, side * 300, DRAG, above=cyc % 2 == 0)
+            N.add(lines[cyc % n], b, side * 300, DRAG, above=cyc % 2 == 0, auto=True)
 
 
 # ================================================================== 67-195: CRYSTALLIZE
@@ -440,7 +441,7 @@ def drop1b(X):
     L.punch(191, 0.05, 2)
     G.bgc(191, NIGHT, 245, 4)
     for i in range(3):
-        N.add(K[i], 191, 0, TAP)
+        N.add(K[i], 191, 0, TAP, above=i % 2 == 0)
     toms = [F(385, 2), F(771, 4), 193, F(387, 2), 194, F(389, 2)]
     P.to(191, 195, "quadOut", rot=rot + 45)
     K[2].to(192, 193, "expoIn", sx=0.0)
@@ -452,7 +453,7 @@ def drop1b(X):
     for k, b in enumerate(toms):
         ln = K[0] if k >= 4 else (K[1] if k >= 2 else K[2])
         x = 420 - 150 * k
-        N.add(ln, b, x, DRAG if k % 2 else TAP)
+        N.add(ln, b, x, DRAG if k % 2 else TAP, auto=True)
         sparkle(s, b, 420 - 170 * k, 250 - 90 * k, 260, SNOW, 1.5, 40)
         L.punch(b, 0.02, F(1, 2))
 
@@ -1297,9 +1298,9 @@ def drop3(X):
         s.tex("crack.png", 0, 10, 900 + 300 * k, None, 51.0 * k, SNOW, 230, 58, b, end)
         for q in range(n_):
             if n_ == 3:
-                N.add(K[q], b, 0, FLICK if k == len(blows) - 1 else TAP)
+                N.add(K[q], b, 0, FLICK if k == len(blows) - 1 else TAP, above=q % 2 == 0)
             else:
-                N.add(K[(k + q) % 3], b, 380 * (1 if q else -1), TAP)
+                N.add(K[(k + q) % 3], b, 380 * (1 if q else -1), TAP, auto=True)
     star_off(X, 710, 1)
     L.wash.ramp(F(1421, 2), 711, 0.0, 0.85, "quadIn")
 

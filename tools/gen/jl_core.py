@@ -465,17 +465,126 @@ class Rig:
 
 
 # ------------------------------------------------------------------ notes
+# ------------------------------------------------------------------ where a line is on screen (prpr semantics, as in preview.py)
+ASP = 16 / 9
+HALF_H = 1 / ASP  # the screen is x in [-1, 1], y in [-HALF_H, HALF_H] (world units, y up)
+
+
+_SORTED = {}
+
+
+def _segments(tr):
+    key = id(tr)
+    hit = _SORTED.get(key)
+    if hit is None or hit[0] != len(tr.segs):
+        segs = sorted(tr.segs, key=lambda q: (q[0], q[1]))
+        hit = (len(tr.segs), segs, [float(q[0]) for q in segs])
+        _SORTED[key] = hit
+    return hit[1], hit[2]
+
+
+def track_value(tr, b):
+    """value of a chartlib Track at beat b (a float is fine), easing and clipped easing included; prpr hold semantics"""
+    import bisect
+    segs, starts = _segments(tr)
+    if not segs:
+        return 0.0
+    b = float(b)
+    i = bisect.bisect_right(starts, b) - 1
+    if i < 0:
+        return float(segs[0][2])
+    b0, b1, v0, v1, e = segs[i]
+    b0, b1 = float(b0), float(b1)
+    if b >= b1 or b1 <= b0:
+        return float(v1)
+    x = (b - b0) / (b1 - b0)
+    if isinstance(e, tuple):
+        eid, el, er = e
+        f = ML._TW[ML._MAP[eid]]
+        f0, f1 = f(el), f(er)
+        y = (f(el + (er - el) * x) - f0) / (f1 - f0) if abs(f1 - f0) > 1e-9 else x
+    else:
+        y = ML._TW[ML._MAP.get(e, 2)](x)
+    return v0 + (v1 - v0) * y
+
+
+def _prop(ln, p, b):
+    v = 0.0
+    for layer in ln.layers:
+        if p in layer and layer[p].segs:
+            v += track_value(layer[p], b)
+    return v
+
+
+def line_world(chart, ln, b):
+    """(x, y, angle) of a line at beat b: world units, angle in radians counter-clockwise"""
+    ang = -math.radians(_prop(ln, "rotate", b))
+    x, y = _prop(ln, "moveX", b) * 2 / 1350, _prop(ln, "moveY", b) * 2 / 900 / ASP
+    if ln.father not in (-1, None):
+        px_, py_, pa = line_world(chart, chart.lines[ln.father], b)
+        if ln.rot_with_father:
+            ang += pa
+        ca, sa = math.cos(pa), math.sin(pa)
+        x, y = px_ + ca * x - sa * y, py_ + sa * x + ca * y
+    return x, y, ang
+
+
+def exit_distance(h, u, bx=1.0, by=HALF_H):
+    """how far one can go from h along unit vector u before leaving the screen"""
+    if abs(h[0]) > bx or abs(h[1]) > by:
+        return 0.0
+    t = 9.0
+    for hk, uk, bk in ((h[0], u[0], bx), (h[1], u[1], by)):
+        if uk > 1e-9:
+            t = min(t, (bk - hk) / uk)
+        elif uk < -1e-9:
+            t = min(t, (-bk - hk) / uk)
+    return t
+
+
 class Notes:
+    ENOUGH = 0.75  # world units of visible approach that need no correction (~0.6 s at speed 8)
+
     def __init__(self, music):
         self.m = music
         self.items = []
         self.fx = None  # hit-effect tint for the notes written from now on
+        self.flipped = 0
 
-    def add(self, jl, b, x, kind=TAP, end=None, above=True, fake=False, speed=1.0, alpha=255, size=1.0, vis=None, yoff=0.0):
-        """x in physical units along the line"""
+    def add(self, jl, b, x, kind=TAP, end=None, above=True, fake=False, speed=1.0, alpha=255, size=1.0, vis=None, yoff=0.0,
+            auto=False):
+        """x in physical units along the line; auto: let write() turn the note to the side of the line from which its
+        approach stays on screen longest (for lines that turn, like the crystal's arms)"""
         self.items.append({"jl": jl, "b": F(b), "x": round(float(x) * PX, 1), "kind": kind, "end": F(end) if end is not None else None,
                            "above": above, "fake": fake, "speed": speed, "alpha": alpha, "size": size, "vis": vis, "fx": self.fx,
-                           "yoff": yoff})
+                           "yoff": yoff, "auto": auto})
+
+    def _visible(self, chart, it, sgn, spb=60 / 160, cap=0.7, dt=0.035):
+        """seconds the note would be on screen before its hit, following the line as it moves and turns"""
+        ln = it["jl"].ln
+        spd = _prop(ln, "speed", it["b"]) * it["speed"]
+        vw = spd * (10 / 45 / 0.83175) / ASP  # world units per second (prpr SPEED_RATIO, then / aspect)
+        xw = it["x"] * 2 / 1350
+        t = 0.0
+        while t < cap:
+            t += dt
+            x0, y0, a = line_world(chart, ln, float(it["b"]) - t / spb)
+            d = sgn * vw * t
+            hx = x0 + math.cos(a) * xw - math.sin(a) * d
+            hy = y0 + math.sin(a) * xw + math.cos(a) * d
+            if abs(hx) > 1.02 or abs(hy) > HALF_H + 0.02:
+                return t - dt
+        return cap
+
+    def _side(self, chart, it):
+        mine = self._visible(chart, it, 1 if it["above"] else -1)
+        if mine >= 0.6:
+            return it["above"]
+        other = self._visible(chart, it, -1 if it["above"] else 1)
+        if other > mine + 0.04:
+            self.flipped += 1
+            return not it["above"]
+        return it["above"]
 
     def taken(self, b, jl=None):
         b = F(b)
@@ -485,10 +594,12 @@ class Notes:
         b = F(b)
         return any(it["kind"] == HOLD and it["jl"] is jl and it["b"] < b < it["end"] for it in self.items)
 
-    def write(self):
+    def write(self, chart=None):
         n = 0
         for it in sorted(self.items, key=lambda i: i["b"]):
             ln = it["jl"].ln
+            if it["auto"] and chart is not None:
+                it["above"] = self._side(chart, it)
             ln.note(it["kind"], it["b"], it["x"], end=it["end"], above=it["above"], speed=it["speed"], alpha=it["alpha"],
                     size=it["size"], fake=it["fake"], visible=it["vis"] if it["vis"] is not None else 999999.0, yoff=it["yoff"])
             if it["fx"] is not None and not it["fake"]:

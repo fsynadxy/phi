@@ -4,6 +4,7 @@
 
 本仓库另有《新宿决战》的两张谱：纯判定线演出（无 note），以及嵌入原 MAD 素材的 IN Lv.16（定数 16.2），见下文。
 另有《走过漫漫时空》（《明日方舟》「遗尘漫步」OST）的特效观赏谱，见下文。
+另有《Just Love (feat. PSYQUI)》的观赏谱（雪、结晶与雪莲，含 6 个自定义着色器），见下文。
 
 - 时长 5:47，BPM 123（全曲恒定，按节拍网格对齐），1238 个物量，137 条判定线，25 段着色器特效
 - 难度标为 `SP Lv.?`，建议开启 Autoplay 观看
@@ -131,6 +132,48 @@ python tools/gen/build.py out --variant dust_walk --song song.ogg --pez walk_in_
 
 ![storyboard dust](preview/storyboard_dust.jpg)
 
+## Just Love (feat. PSYQUI) · 观赏谱
+
+《Just Love (feat. PSYQUI)》（曲：PSYQUI ／ 谱：claude）的观赏谱，等级 `SP Lv.?`，建议开启 Autoplay 和特效观看。画面以封面为题：雪、秋千、蓝玫瑰和「雪蓮」。
+
+- 时长 4:53，160 BPM（全曲恒定，无漂移；第 0 拍的鼓点瞬态在 15.5 ms，谱面偏移 16 ms）
+- 1589 个物量（tap 800、flick 410、drag 309、hold 70），191 条线，33 段特效（其中 6 个是自定义 GLSL 着色器）
+- note 全部来自对歌曲 32 分网格的分析：底鼓在两侧，反拍军鼓是中间的 flick，踩镲是 drag，主旋律按音高决定横向位置，长音做成 hold
+- 八个章节，章节名以小字幕出现在左下角：
+
+| 小节 | 时间 | 章节 | 画面 |
+|---|---|---|---|
+| 0–7 | 0:01 | — | 封面原图在雪中缓缓展开，人声切片的停顿处黑场；曲名作为下三分之一字幕 |
+| 8–15 | 0:13 | FIRST SNOW | 画面溶解成雪，一点光拉开成判定线，雪花在背后成形；鼓停的一拍砸下 “Just” “Love” |
+| 16–47 | 0:25 | CRYSTALLIZE | 一条线 → 三条线拼成的六臂雪花（随反拍转 30°）→ 暴雪中的双线和六边形隧道 → 再成雪花，万花筒把整屏折成结晶 |
+| 48–55 | 1:13 | — | 静止的空气、玫瑰和上升的光点；四个鼓停让冰面一次次裂开，滚奏后碎裂 |
+| 56–87 | 1:25 | BLOOM | 22 片花瓣的雪莲绽放，每四小节换色；后半段六条线围成六边形，鼓点从花心向外飞出 |
+| 88–103 | 2:13 | SWING | 花瓣飘落；判定线挂在两根绳上成了秋千，在极光与结冰的湖面（镜面倒影）上摆动 |
+| 104–120 | 2:37 | PRISM | 绳子断开，判定线翻转；六边形棱镜，五种颜色轮换，外圈是由歌曲频谱驱动的光柱环 |
+| 121–136 | 3:03 | LETTER | 封面以灰阶慢慢推近（遮幅）；第二次铺垫，冰面再裂时拼出 Just / Love / ♡ |
+| 137–168 | 3:27 | FULL BLOOM | 最后一次副歌：雪莲、雪花与极光同时出现，「雪」「蓮」二字在两侧 |
+| 169–176 | 4:15 | — | 全速旋转的雪花，最后一小节七记重击逐次白闪 |
+| 177–192 | 4:27 | AFTERGLOW | 秋千慢慢停下；回到封面，人声三次停顿；最后一个和弦时心形光圈收拢到她脸上，黑场里出曲名，fin. |
+
+- 自定义着色器（`tools/gen/jl_shaders/`）：`lens`（贯穿全曲的镜头：推拉、滚转、色散、饱和度、反色帧、白场、霜边，一个常驻通道加关键帧变量）、`kaleido`（雪花万花筒）、`shatter`（碎冰）、`mirror`（冰湖倒影）、`heart`（心形光圈）、`glow`（柔光）。全部在无头 Chromium 的 WebGL 1（ANGLE，GLSL ES 1.00）中编译通过；坐标方向按 Phira 及其 macroquad 分支的源码核对过（见指南 5b）
+- 还有一个 **lite 版**（等级 `SP Lv.? lite`）：去掉全部自定义着色器，只保留内置的 shockwave，note 与画面编排完全相同。如果完整版在你的设备上加载失败或太卡，就用这个
+- 雪花旋转时，旋臂上的 note 会沿判定线的真实运动路径模拟入场，自动选择从画面内侧落下的一面（`jl_core.Notes` 的 `auto`）
+- 这是观赏谱，没有按可玩性限制：有 148 处三指同时（雪花中心三向汇聚的 flick），1 秒峰值 18 个
+- 字体：Pinyon Script、Cormorant Garamond、Jost、Shippori Mincho（均为 SIL OFL 1.1），预先渲染在 `tools/data/justlove/`
+
+![storyboard jl](preview/storyboard_jl.jpg)
+
+<sub>仓库里没有封面原图，上图的封面画面是程序生成的占位图；完整包里是你提供的封面。</sub>
+
+**仓库里没有音频和封面**。完整包 `just_love_showcase.pez`（含音乐与封面）和 `just_love_showcase_lite.pez` 单独发送；`chart_jl/` 是不含音频、封面换成占位图的谱面目录。如需自行打包：
+
+```bash
+pip install numpy pillow pyyaml
+ffmpeg -i 原音频.m4a -vn -map_metadata -1 -c:a libvorbis -q:a 7 song.ogg
+python tools/gen/build.py out --variant just_love --song song.ogg --cover 封面.jpg --pez just_love_showcase.pez
+JL_LITE=1 python tools/gen/build.py out_lite --variant just_love --song song.ogg --cover 封面.jpg --pez just_love_showcase_lite.pez
+```
+
 ## 给其他工作区：做 Phira 谱面的格式与避坑
 
 见 [docs/PHIRA_CHART_GUIDE.md](docs/PHIRA_CHART_GUIDE.md)（含可直接改的最小示例 `tools/gen/example_minimal.py`）。
@@ -151,3 +194,4 @@ python tools/gen/build.py out --variant dust_walk --song song.ogg --pez walk_in_
 - `tools/data/mad/`：标题字、封面、静音打击音、节拍网格与 16 分起音矩阵；`tools/analysis/mad_stage*.py` 为这首歌的分析脚本
 - `chart_in/`、`tools/gen/shinjuku_chart.py`：IN Lv.16 谱面（不含音频与视频）及其生成器
 - `chart_dust/`、`tools/gen/dust_walk.py`、`dust_assets.py`：《走过漫漫时空》观赏谱（不含音频）、生成器与贴图；`tools/data/dust/` 为预渲染文字、封面与节拍分析结果（`mad_stage2-4.py` 以 160 BPM 运行得到）；`tools/gen/playcheck.py` 为可玩性检查；`tools/analysis/cut_clips.py` 从参考视频切出素材
+- `chart_jl/`、`tools/gen/just_love.py`（入口与贴图登记）、`jl_scenes.py`（十三段编排）、`jl_core.py`（舞台、镜头着色器关键帧、判定线与 note 写入）、`jl_assets.py`（贴图与文字）、`jl_shaders/`（自定义着色器）：《Just Love》观赏谱；`tools/analysis/jl_steps.py` 为这首歌的分析脚本（结果在 `tools/data/justlove/`）；`tools/gen/glfx.js` 用无头 Chromium 的 WebGL 编译和运行着色器，`jl_preview.py` 用真实着色器渲染预览（需设置 `PHIRA_SRC` 指向 phira 源码）

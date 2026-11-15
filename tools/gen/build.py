@@ -41,6 +41,8 @@ def build(out, song=None, cover=None, variant="showcase"):
     dump(chart.extra_json(), os.path.join(out, "extra.json"))
     with open(os.path.join(out, "info.yml"), "w", encoding="utf-8") as f:
         yaml.safe_dump(info, f, allow_unicode=True, sort_keys=False)
+    if hasattr(showcase, "finalize"):  # e.g. drop textures the chart never uses
+        showcase.finalize(out)
     if song:
         shutil.copy(song, os.path.join(out, info["music"]))
     if cover:

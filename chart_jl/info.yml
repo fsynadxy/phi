@@ -1,0 +1,29 @@
+name: Just Love (feat. PSYQUI)
+difficulty: 15.0
+level: SP Lv.?
+charter: claude
+composer: PSYQUI
+illustrator: 「雪蓮 YUKI-HASU」封面
+chart: chart.json
+format: rpe
+music: song.ogg
+illustration: illustration.jpg
+previewStart: 85.0
+previewEnd: 109.0
+aspectRatio: 1.7777778
+backgroundDim: 0.5
+lineLength: 6.0
+offset: 0.0
+tip: 观赏谱 · 建议开启 Autoplay 与特效观看
+tags:
+- 观赏谱
+- showcase
+- autoplay
+- PSYQUI
+- 東雪蓮
+intro: 以封面为题的观赏谱：初雪、结晶、雪莲绽放、秋千与冰湖。全曲 160 BPM，谱面与演出逐拍对齐。
+holdPartialCover: false
+noteUniformScale: false
+forceAspectRatio: false
+useRpe170Speed: false
+useAttachUiFix: true

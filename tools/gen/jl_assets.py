@@ -338,7 +338,7 @@ def render_texts(fonts):
 
 # ------------------------------------------------------------------ cover art
 def cover_textures(out, cover):
-    """cover_sq.png: the jacket with rounded corners; cover_wide.png: a 16:9 cut whose edges melt away"""
+    """cover_wide.png: a 16:9 cut of the jacket whose edges melt away"""
     if cover:
         im = Image.open(cover).convert("RGB")
     else:  # placeholder: a quiet snowy gradient
@@ -353,7 +353,6 @@ def cover_textures(out, cover):
     mask = Image.new("L", (900 * 3, 900 * 3), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, 900 * 3 - 1, 900 * 3 - 1), radius=26 * 3, fill=255)
     sq.putalpha(mask.resize((900, 900), Image.LANCZOS))
-    sq.save(os.path.join(out, "cover_sq.png"), optimize=True)
     # 16:9 band of the square (the face and the lettering sit in the upper two thirds)
     w = sq.width
     h = round(w * 9 / 16)

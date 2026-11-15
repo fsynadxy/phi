@@ -68,7 +68,7 @@ TEX = {
     "heart.png": (512, 512), "heart_o.png": (512, 512), "spark.png": (256, 256), "bokeh.png": (256, 256),
     "snow_a.png": (1024, 1024), "snow_b.png": (1024, 1024), "stars.png": (2048, 1152), "aurora.png": (1024, 512),
     "rays.png": (1024, 1024), "mist.png": (1024, 576), "vig.png": (512, 288), "crack.png": (1024, 576),
-    "cover_sq.png": (900, 900), "cover_wide.png": (1280, 720),
+    "cover_wide.png": (1280, 720),
 }
 SHADERS = ("lens", "kaleido", "shatter", "mirror", "heart", "glow")
 LITE = bool(os.environ.get("JL_LITE"))  # no custom GLSL at all (only Phira's built-in shockwave): the fallback package
@@ -231,7 +231,8 @@ def build(c):
 
     E.bake()
     G.emit(random.Random(7))
-    n = N.write()
+    n = N.write(c)
+    print(f"notes turned to their better side: {N.flipped}")
     # effects, in drawing order: scene shaders first, the lens (camera) last
     for name, b0, b1, v in X.pre:
         c.effect(name, b0, b1, v)
@@ -266,3 +267,15 @@ def assets(out, cover=None):
                 os.remove(dst)
         else:
             shutil.copy(os.path.join(HERE, "jl_shaders", f"{name}.glsl"), dst)
+
+
+def finalize(out):
+    """remove textures and shaders that the built chart does not reference (the asset step makes a few spares)"""
+    import json
+    chart = json.load(open(os.path.join(out, "chart.json"), encoding="utf-8"))
+    extra = json.load(open(os.path.join(out, "extra.json"), encoding="utf-8"))
+    used = {ln["Texture"] for ln in chart["judgeLineList"]}
+    used |= {e["shader"][1:] for e in extra.get("effects", []) if e["shader"].startswith("/")}
+    for name in sorted(os.listdir(out)):
+        if name.endswith((".png", ".glsl")) and name not in used:
+            os.remove(os.path.join(out, name))
