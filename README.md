@@ -174,6 +174,19 @@ python tools/gen/build.py out --variant just_love --song song.ogg --cover 封面
 JL_LITE=1 python tools/gen/build.py out_lite --variant just_love --song song.ogg --cover 封面.jpg --pez just_love_showcase_lite.pez
 ```
 
+### 录制（真实引擎，离线逐帧）
+
+`tools/render/` 把官方离线渲染器 TeamFlos/phira-render 的 `render` 子命令移植到当前的 prpr（原来依赖的 `render-lib` 分支已删除），在没有显卡的 Linux 上用 Xvfb + Mesa 逐帧渲染 1080p60（4× MSAA），再按引擎自己的时间轴混入原曲与 Phira 自带打击音：
+
+```bash
+JL_WORK=/tmp/jl PHIRA=<phira 源码目录> tools/render/render.sh just_love_showcase.pez just_love_1080p60.mp4
+```
+
+- 时间轴是从引擎源码推出来并逐帧核对过的：加载卡片在第 169 帧切到游戏，音乐从第 212 帧（3.533 s）开始；第一个音符按推算应在第 1113 帧被击中，实际分数正好在这一帧跳变
+- 与原版渲染器的两处不同：同步读帧（原版的三缓冲 PBO 会让画面比声音晚 2 帧）；音频在 Python 中混合，同一时刻的同类打击音只叠一次，最后限幅到 −1 dBFS
+- 机器上没有声卡时，Phira 需要一个 ALSA 空设备并指定 44.1 kHz（否则 cpal 取设备上报的最大采样率而失败），脚本已处理
+- 4 核 CPU 上约每帧 0.2 秒，全曲两段并行约一小时
+
 ## 给其他工作区：做 Phira 谱面的格式与避坑
 
 见 [docs/PHIRA_CHART_GUIDE.md](docs/PHIRA_CHART_GUIDE.md)（含可直接改的最小示例 `tools/gen/example_minimal.py`）。
@@ -194,4 +207,5 @@ JL_LITE=1 python tools/gen/build.py out_lite --variant just_love --song song.ogg
 - `tools/data/mad/`：标题字、封面、静音打击音、节拍网格与 16 分起音矩阵；`tools/analysis/mad_stage*.py` 为这首歌的分析脚本
 - `chart_in/`、`tools/gen/shinjuku_chart.py`：IN Lv.16 谱面（不含音频与视频）及其生成器
 - `chart_dust/`、`tools/gen/dust_walk.py`、`dust_assets.py`：《走过漫漫时空》观赏谱（不含音频）、生成器与贴图；`tools/data/dust/` 为预渲染文字、封面与节拍分析结果（`mad_stage2-4.py` 以 160 BPM 运行得到）；`tools/gen/playcheck.py` 为可玩性检查；`tools/analysis/cut_clips.py` 从参考视频切出素材
+- `tools/render/`：用真实引擎离线录制（`jl-render` 为 GPL-3.0，改编自 phira-render），`mix.py` 混音
 - `chart_jl/`、`tools/gen/just_love.py`（入口与贴图登记）、`jl_scenes.py`（十三段编排）、`jl_core.py`（舞台、镜头着色器关键帧、判定线与 note 写入）、`jl_assets.py`（贴图与文字）、`jl_shaders/`（自定义着色器）：《Just Love》观赏谱；`tools/analysis/jl_steps.py` 为这首歌的分析脚本（结果在 `tools/data/justlove/`）；`tools/gen/glfx.js` 用无头 Chromium 的 WebGL 编译和运行着色器，`jl_preview.py` 用真实着色器渲染预览（需设置 `PHIRA_SRC` 指向 phira 源码）

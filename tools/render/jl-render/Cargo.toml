@@ -1,0 +1,12 @@
+[package]
+name = "jl-render"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+macroquad = { workspace = true, default-features = false }
+prpr = { workspace = true }
+serde_yaml = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread"] }
