@@ -1,0 +1,11 @@
+[package]
+name = "wem-render"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+macroquad = { workspace = true }
+prpr = { path = "../../prpr" }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread"] }

@@ -164,6 +164,8 @@ ffmpeg -i 原音频.m4a -vn -map_metadata -1 -c:a libvorbis -q:a 7 song.ogg
 WEM_COVER=封面.jpg python tools/gen/build.py out --variant wem_chart --song song.ogg --pez world_execute_me.pez
 ```
 
+- 段落说明文字放在左上角：Phira 的连击数固定显示在屏幕顶部正中
+- 演示视频（1080p60，Autoplay，含打击音）用 Phira 自己的引擎在 CPU 上离线渲染，方法见 [tools/render/README.md](tools/render/README.md)；视频单独发送，不放进仓库
 - 节拍与分轨分析：`tools/analysis/mad_stage1-3.py`（130 BPM）、`wem_separate.py`（Demucs htdemucs，需 torch + demucs）、`wem_stems.py`（每个 16 分的人声音节 / 音高 / 鼓点）
 
 ![storyboard wem](preview/storyboard_wem.jpg)

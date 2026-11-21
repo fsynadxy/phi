@@ -106,6 +106,14 @@ def txt(sh, name, x, y, h, b0, b1, col=WHITE, a=255, z=20, fade=F(1, 4), left=Fa
     return e
 
 
+LABEL_X, LABEL_Y = -720.0, 382.0  # top left, clear of the pause button, the combo counter (top centre) and the score
+
+
+def label(sh, name, h, b0, b1, col=WHITE, a=255, z=20):
+    """a section caption: left-aligned at the top left of the screen"""
+    return txt(sh, name, LABEL_X, LABEL_Y, h, b0, b1, col, a, z=z, left=True)
+
+
 def typed(sh, name, nchar, x_left, y, h, b0, dur, b_end, col, panel, z=20, cursor=True):
     """terminal typing: the text is uncovered character by character by a panel-coloured mask."""
     pw, ph = size(name)
@@ -392,7 +400,7 @@ class World:
             x, y = spots[k % 4]
             pop(sh, "win_blank.png", x, y, 300, b, b + 3, WHITE, 255, z=30, rot=R.uniform(-4, 4))
             pop(sh, faces[k], x, y - 14, 110, b + F(1, 8), b + 3 - F(1, 16), WHITE, 255, z=31)
-        txt(sh, "t_run", 0, 380, 49, 32, 40, TERM, 255, z=20)
+        label(sh, "t_run", 49, 32, 40, TERM, 255, z=20)
         # lines: A on the kicks (bottom), B on the off-beats (top, upside down); they swap halfway
         A.at(32, col=CYAN, spd=9.0)
         bounce(A, [b for b in range(33, 47)], B0, 10)
@@ -441,7 +449,7 @@ class World:
         A.at(64, col=WHITE, a=255, spd=9.0)
         S.bgc(64, (8, 16, 30), 1)
         # -- points -> dimension (64-72)
-        txt(sh, "t_points", 0, 390, 56, 64, 72, CYAN, 230)
+        label(sh, "t_points", 56, 64, 72, CYAN, 230)
         ev = m.vocal(64, 72, 0.3)
         dots = []
         for k, e in enumerate(ev):
@@ -464,7 +472,7 @@ class World:
         g.at(72, "quadIn", alpha=0)
         N.place(ev, A, zone=(110, 520), flicks=auto_flicks(ev), chord_at=[64], seed=11)
         # -- circle -> circumference (72-80)
-        txt(sh, "t_circle", 0, 390, 63, 72, 80, VIOLET, 240)
+        label(sh, "t_circle", 63, 72, 80, VIOLET, 240)
         ring = sh.tex("ring_cover.png", 0, 90, 60, color=WHITE, alpha=0, z=-20, start=72, end=80)
         ring.at(73, "expoOut", w=560, h=560, alpha=230, rot=-60)
         ring.at(F(151, 2), "linear", rot=-60 + 315)
@@ -497,7 +505,7 @@ class World:
         ev = m.vocal(72, 80, 0.3)
         N.place(ev, A, zone=(110, 500), flicks=auto_flicks(ev), seed=12)
         # -- sine wave and its tangents (80-88): the notes sit on the tangents
-        txt(sh, "t_tangent", 0, 390, 56, 80, 88, PINK, 230)
+        label(sh, "t_tangent", 56, 80, 88, PINK, 230)
         A.to(F(319, 4), 80, "quadIn", a=0)
         wave = sh.tex("sine.png", 0, -110, 1700, 260, color=PINK, alpha=0, z=-25, start=79, end=88)
         wave.at(80, alpha=50)
@@ -533,7 +541,7 @@ class World:
         A.at(F(175, 2), y=B0, rot=0)
         A.to(F(175, 2), 88, "quadOut", a=255)
         # -- infinity and limits (88-96)
-        txt(sh, "t_limit", 0, 390, 59, 88, 96, YELLOW, 230)
+        label(sh, "t_limit", 59, 88, 96, YELLOW, 230)
         inf = sh.tex("t_inf.png", 0, 120, 620, color=YELLOW, alpha=0, z=-30, start=88, end=94)
         inf.at(89, alpha=70)
         inf.at(93, alpha=70)
@@ -621,8 +629,8 @@ class World:
         wave.at(100, h=300, color=YELLOW)
         wave.at(F(201, 2), "expoOut", h=8, color=CYAN)
         wave.at(104, alpha=150)
-        txt(sh, "t_ac", 0, 380, 61, 96, 100, YELLOW, 255)
-        txt(sh, "t_dc", 0, 380, 61, 100, 104, CYAN, 255)
+        label(sh, "t_ac", 61, 96, 100, YELLOW, 255)
+        label(sh, "t_dc", 61, 100, 104, CYAN, 255)
         # AC: the line swings through its rest position on every 8th
         AMP = 46
         A.to(96, F(385, 4), "sineOut", y=Y + AMP)
@@ -649,7 +657,7 @@ class World:
                 a = 2 * math.pi * (j / 16 + k / 4)
                 f.at(t, "linear", x=430 * math.cos(a), y=120 + 220 * math.sin(a), rot=j * 22.5, alpha=220 if 0 < j < 32 else 0)
         # A.D. <-> B.C. (112-120): the clock runs backwards and the notes rewind
-        txt(sh, "t_time", 0, 380, 61, 112, 120, PALE, 255)
+        label(sh, "t_time", 61, 112, 120, PALE, 255)
         S.bgc(112, (10, 14, 24), 1)
         A.at(112, col=PALE)
         clock = sh.tex("clock.png", 0, 90, 80, color=PALE, alpha=0, z=-25, start=112, end=120)
@@ -681,7 +689,7 @@ class World:
         B.to(126, 127, "quartInOut", y=0, rot=360, a=0)
         B.at(127, rot=0)
         S.bgc(120, (16, 10, 30), 2)
-        txt(sh, "t_merge", 0, 390, 49, 121, 127, PALE, 230)
+        label(sh, "t_merge", 49, 121, 127, PALE, 230)
         A.to(127, F(255, 2), "expoIn", sx=0.004, sy=3.0, col=WHITE)
         core = sh.tex("glow.png", 0, 0, 10, color=WHITE, alpha=0, z=12, start=127, end=F(257, 2))
         core.at(F(255, 2), "expoIn", w=180, h=180, alpha=255)
@@ -787,7 +795,7 @@ class World:
                 e.at(b + F(1, 4), "quadOut", w=290, h=tex_h(icon, 260) * 0.9, rot=8 if b % 2 else -8)
                 e.at(b + 1, "quadIn", w=260, h=tex_h(icon, 260), rot=0)
             anim(e, b0 + 7, b0 + 8, "backIn", y=y + 600 if x == 0 else y, x=x * 2 if x else 0)
-            txt(sh, text, 0, 390, 54, b0, b0 + 8, col, 240)
+            label(sh, text, 54, b0, b0 + 8, col, 240)
         # the cat purrs: the line trembles
         for b in range(176, 184, 2):
             for j in range(8):
@@ -815,7 +823,7 @@ class World:
             ray.at(186, "quadOut", w=820, alpha=90)
             ray.at(191, "linear", rot=a0 + 60)
             anim(ray, 191, 192, "quadIn", alpha=0, w=1000)
-        txt(sh, "t_exist", 0, 390, 56, 184, 192, GOLD, 255)
+        label(sh, "t_exist", 56, 184, 192, GOLD, 255)
         A.to(F(383, 2), 192, "quadIn", sy=1.0)
         # ---- notes
         ev = m.vocal(160, 192, 0.3)
@@ -835,7 +843,7 @@ class World:
         B.at(192, y=Y2 - 60, rot=0, col=SKY, a=0, spd=9.0)
         B.to(192, 193, "quadOut", y=Y2, a=255)
         S.bgc(192, (24, 16, 40), 1)
-        txt(sh, "t_fm", 0, 390, 61, 192, 200, PALE, 240)
+        label(sh, "t_fm", 61, 192, 200, PALE, 240)
         # F <-> M: the lines trade places every two beats
         up = True
         for b in range(193, 199, 2):
@@ -845,7 +853,7 @@ class World:
         A.to(199, 200, "sineInOut", y=Y1)
         B.to(199, 200, "sineInOut", y=Y2)
         # AM <-> PM: day and night every two beats, a sun / moon arcs over
-        txt(sh, "t_ampm", 0, 390, 61, 200, 208, PALE, 240)
+        label(sh, "t_ampm", 61, 200, 208, PALE, 240)
         for k, b in enumerate(range(200, 208, 2)):
             S.bgc(b, (70, 110, 170) if k % 2 == 0 else (8, 10, 34), F(1, 2), "sineInOut")
             body = sh.tex("disc.png", -760, 0, 120, color=YELLOW if k % 2 == 0 else PALE, alpha=255, z=-30, start=b, end=b + 2)
@@ -854,7 +862,7 @@ class World:
                 a = math.pi * j / 8
                 body.at(t, "linear", x=-760 * math.cos(a), y=-40 + 380 * math.sin(a))
         # role ^= 1: only one line is "on" each bar
-        txt(sh, "t_role", 0, 390, 54, 208, 216, PALE, 240)
+        label(sh, "t_role", 54, 208, 216, PALE, 240)
         S.bgc(208, (20, 12, 34), 1)
         for b in range(208, 216, 4):
             on, off = (A, B) if (b // 4) % 2 == 0 else (B, A)
@@ -862,7 +870,7 @@ class World:
             off.at(b, a=70)
         # 10 REM: dream (216-224)
         S.bgc(216, (30, 16, 52), 2)
-        txt(sh, "t_rem", 0, 390, 59, 216, 222, VIOLET, 230)
+        label(sh, "t_rem", 59, 216, 222, VIOLET, 230)
         A.at(216, a=255)
         B.at(216, a=255)
         A.to(216, 220, "sineInOut", y=-200, rot=-4)
@@ -907,7 +915,7 @@ class World:
         for b in range(224, 240):
             S.bgc(b, (70, 6, 16) if b % 2 == 0 else (16, 4, 8), 0)
             S.bgc(b, (34, 4, 10) if b % 2 == 0 else (10, 2, 6), F(3, 4), "quadOut")
-        blink = sh.tex("t_executing.png", 0, 390, 400, color=RED, alpha=255, z=20, start=224, end=240)
+        blink = sh.tex("t_executing.png", LABEL_X + 200, LABEL_Y, 400, color=RED, alpha=255, z=20, start=224, end=240)
         for b in range(224, 240):
             blink.at(b, alpha=255)
             blink.at(b + F(1, 2), alpha=255)
@@ -918,7 +926,7 @@ class World:
             S.shake(b, 14, F(1, 2), 6, seed=b)
         # 240-256: the cage -- while (true) { }
         S.bgc(240, (20, 6, 12), 1)
-        txt(sh, "t_loop", 0, 390, 56, 240, 256, PALE, 255)
+        label(sh, "t_loop", 56, 240, 256, PALE, 255)
         for k in range(9):
             x = -720 + 180 * k
             bar = sh.tex("white.png", x, 1000, 12, 900, color=PALE, alpha=200, z=13, start=240 + F(k, 8), end=258)
@@ -1026,8 +1034,8 @@ class World:
         A.at(320, col=WHITE, spd=8.5)
         S.fxk("grayscale", 320, 352, {"factor": [(320, 0.0, "linear"), (322, 0.9, "quadOut"), (344, 0.9, "linear"),
                                                  (352, 0.0, "quadIn")]})
-        panel(sh, -560, 340, 560, 430, 320, 344, INK, 220, z=18)
-        typed(sh, "t_deadlock", 25, -530, 385, 46, F(641, 2), 3, 344, PALE, INK, z=20)
+        panel(sh, -750, 300, -205, 380, 320, 344, INK, 220, z=18)
+        typed(sh, "t_deadlock", 25, -730, 340, 44, F(641, 2), 3, 344, PALE, INK, z=20)
         # memory fragments: tiles of the cover drifting
         tw, th = size("tile_00.jpg")
         for k in range(10):
@@ -1191,8 +1199,8 @@ class World:
         A.at(416, col=WHITE, spd=9.0, rot=0)
         S.bgc(416, NIGHT, 1)
         S.bgc(424, INK, 4)
-        panel(sh, -790, 300, -200, 440, F(833, 2), 444, INK, 230, z=18)
-        typed(sh, "t_shutdown", 12, -770, 375, 52, 417, F(3, 2), 444, TERM, INK)
+        panel(sh, -760, 270, -300, 380, F(833, 2), 444, INK, 230, z=18)
+        typed(sh, "t_shutdown", 12, -735, 325, 52, 417, F(3, 2), 444, TERM, INK)
         # objects deleted one per bar
         objs = [("ring_cover.png", 0, 60, 520, 416, 424), ("wing_l.png", -330, 80, 420, 416, 428),
                 ("wing_r.png", 330, 80, 420, 416, 428), ("power.png", 0, 60, 150, 416, 432)]
