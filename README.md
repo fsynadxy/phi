@@ -3,7 +3,7 @@
 《华鸟风月》（曲：ZUN ／ 谱：Claude）的 Phira 观赏谱（RPE 格式），以「夜空与星轨」为主题，按歌曲本身的结构编排成十二个乐章。
 
 本仓库另有《新宿决战》的两张谱：纯判定线演出（无 note），以及嵌入原 MAD 素材的 IN Lv.16（定数 16.2），见下文。
-另有《走过漫漫时空》（《明日方舟》「遗尘漫步」OST）的特效观赏谱，见下文。
+另有《走过漫漫时空》（《明日方舟》「遗尘漫步」OST）的特效观赏谱，以及 Mili《world.execute(me);》的观赏谱，见下文。
 
 - 时长 5:47，BPM 123（全曲恒定，按节拍网格对齐），1238 个物量，137 条判定线，25 段着色器特效
 - 难度标为 `SP Lv.?`，建议开启 Autoplay 观看
@@ -131,6 +131,43 @@ python tools/gen/build.py out --variant dust_walk --song song.ogg --pez walk_in_
 
 ![storyboard dust](preview/storyboard_dust.jpg)
 
+## world.execute(me); · 观赏谱
+
+Mili《world.execute(me);》（专辑《Miracle Milk》，2016）的观赏谱，等级 `SP Lv.?`，建议开启 Autoplay 观看，也可以正常游玩。
+
+这首歌的歌词写成一段程序：一个被创造出来去爱「你」的程序，在模拟里开机、建模、上几何课，最后在报错与「execute」的双关里结束。谱面就把歌词当成程序来演——每段画面对应一段「代码」，屏幕上的文字是对歌词的程序化注释（`> power.on()`、`C = 2πr`、`while (true) { }`、`goodbye, world.`），不直接显示歌词原文。视觉取自封面：像素风绿翅膀、蓝紫色圆环、胸口的电源键、复古弹窗与表情、故障风。
+
+- 时长 3:32，130 BPM（全曲恒定，首拍 0.2205 s）；762 个物量（tap 523、drag 126、hold 81、flick 32），261 条线，79 段着色器特效
+- 节奏取自 Demucs 分轨后的人声音节与鼓点（`tools/data/wem/stems.npz`）：主歌跟唱、副歌加底鼓、终副歌再加反拍；各段约 3–5 note/s，1 秒峰值 8
+- `tools/gen/playcheck.py` 全谱检查：没有 3 个以上同时触点、没有重叠 note、没有单手过快或过远的跳跃、没有落在隐形线或屏幕外的 note
+
+| 拍 | 时间 | 段落 | 画面 |
+|---|---|---|---|
+| 0–32 | 0:00 | BOOT | 黑屏里一个电源灯，判定线像 CRT 一样点亮；终端逐行打出 8 行「代码」（开机、保护、摆放零件、新建对象、填数据、初始化、建世界、执行），零件落下拼成电源键，进度条、坐标网格，最后标题与封面闪现 |
+| 32–64 | 0:15 | RUN | 器乐段：封面的圆环、翅膀、电源键登场，上下两条线一条踩正拍一条踩反拍，半途互换位置；弹窗里冒出表情 |
+| 64–96 | 0:30 | 几何课 | 点集连成星座 → 圆滚过判定线、留下周长 → **音符落在正弦波的切线上**（9 段切线随波起伏）→ 光点描出 ∞、两侧红墙收拢（极限） |
+| 96–128 | 0:45 | 电流 | AC：判定线每个八分音符穿过静止位置振荡；DC：拉直；致盲白闪；镜头摇晃 + 鱼眼；时钟倒转，**音符倒退再折返**；上下两线合二为一，缩成一点 |
+| 128–160 | 0:59 | 副歌 | 封面配色全开，背景透出模糊封面；下线唱「If I can」、上线接第二句，线随底鼓弹动 |
+| 160–192 | 1:14 | 对象 | 像素茄子、番茄、虎斑猫（呼噜时判定线颤动），「唯一的神」只剩一条金线、光环与光芒 |
+| 192–224 | 1:29 | SWITCH | 两线交换位置、昼夜交替、轮流「值班」、梦境模糊；弹窗「EXECUTE ME?」，光标点下 YES |
+| 224–288 | 1:44 | EXECUTE | 红色警报与频闪，栅栏落下（`while (true) { }`），上下呼应，故障与错误弹窗越来越多，HUD 变红抖动 |
+| 288–320 | 2:13 | ERROR | 器乐段：故障着色器、错误窗口层叠、判定线随机瞬移、蓝屏「FATAL」、重启 |
+| 320–352 | 2:28 | DEADLOCK | 灰阶，封面碎片像记忆一样漂浮，像素心随底鼓跳动然后熄灭，世界坍缩成一点 |
+| 352–416 | 2:43 | FINAL | 封面由 24 块碎片拼回（压暗作背景，判定线下加深色底条保证可读），标题；之后碎裂，圆环、翅膀、彩虹判定线全开 |
+| 416–458 | 3:12 | SHUTDOWN | 对象逐个删除、进度条倒退（卸载）、HUD 退场；封面像旧显像管一样关机成一条线、一个点；`goodbye, world.` |
+
+- 文字贴图预先渲染在 `tools/data/wem/`（Press Start 2P、VT323，SIL OFL 1.1；数学符号为 DejaVu Sans），像素图标与弹窗全部程序生成（`tools/gen/wem_assets.py`）
+- **仓库里没有音频和用户的封面**。`chart_wem/` 用的是程序生成的替代封面（终副歌的拼图、开场闪现、结尾关机画面都来自封面，所以没有封面时这几处会显示替代图）。完整包 `world_execute_me.pez`（含音乐与封面）单独发送。如需自行打包（m4a 需先转成 OGG，Phira 不能解码 MP4 容器）：
+
+```bash
+ffmpeg -i 原音频.m4a -vn -map_metadata -1 -c:a libvorbis -q:a 7 song.ogg
+WEM_COVER=封面.jpg python tools/gen/build.py out --variant wem_chart --song song.ogg --pez world_execute_me.pez
+```
+
+- 节拍与分轨分析：`tools/analysis/mad_stage1-3.py`（130 BPM）、`wem_separate.py`（Demucs htdemucs，需 torch + demucs）、`wem_stems.py`（每个 16 分的人声音节 / 音高 / 鼓点）
+
+![storyboard wem](preview/storyboard_wem.jpg)
+
 ## 给其他工作区：做 Phira 谱面的格式与避坑
 
 见 [docs/PHIRA_CHART_GUIDE.md](docs/PHIRA_CHART_GUIDE.md)（含可直接改的最小示例 `tools/gen/example_minimal.py`）。
@@ -150,4 +187,5 @@ python tools/gen/build.py out --variant dust_walk --song song.ogg --pez walk_in_
 - `tools/gen/mad_shinjuku.py`：《新宿决战》的逐拍分镜；`madlib.py` 为演出引擎（镜头、对象池、缓动截取）；`mad_assets.py` 生成贴图（标题字体为 Yuji Boku，SIL OFL 1.1）
 - `tools/data/mad/`：标题字、封面、静音打击音、节拍网格与 16 分起音矩阵；`tools/analysis/mad_stage*.py` 为这首歌的分析脚本
 - `chart_in/`、`tools/gen/shinjuku_chart.py`：IN Lv.16 谱面（不含音频与视频）及其生成器
+- `chart_wem/`、`tools/gen/wem_chart.py`（十二段编排）、`wem_lib.py`（判定线、双手音符分配、镜头 / 背景 / HUD / 特效）、`wem_assets.py`、`wem_text.py`：《world.execute(me);》观赏谱（不含音频与封面）及其生成器；`tools/data/wem/` 为文字贴图与分轨分析结果
 - `chart_dust/`、`tools/gen/dust_walk.py`、`dust_assets.py`：《走过漫漫时空》观赏谱（不含音频）、生成器与贴图；`tools/data/dust/` 为预渲染文字、封面与节拍分析结果（`mad_stage2-4.py` 以 160 BPM 运行得到）；`tools/gen/playcheck.py` 为可玩性检查；`tools/analysis/cut_clips.py` 从参考视频切出素材

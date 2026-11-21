@@ -1,0 +1,29 @@
+name: world.execute(me);
+difficulty: 13.0
+level: SP Lv.?
+charter: Claude
+composer: Mili
+illustrator: 未知（封面由用户提供）
+chart: chart.json
+format: rpe
+music: song.ogg
+illustration: illustration.jpg
+previewStart: 59.3
+previewEnd: 74.0
+aspectRatio: 1.7777778
+backgroundDim: 0.5
+lineLength: 6.0
+offset: 0.0
+tip: '> world.execute(me);  建议开启 Autoplay 观看；特效较多，设备较弱时可关闭特效'
+tags:
+- 观赏谱
+- showcase
+- Mili
+- world.execute(me);
+- glitch
+intro: Mili《world.execute(me);》观赏谱：把歌词当成一段程序来演——开机、建模、几何课、交流电、副歌、报错、死锁、关机。
+holdPartialCover: false
+noteUniformScale: false
+forceAspectRatio: false
+useRpe170Speed: false
+useAttachUiFix: true
